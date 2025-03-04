@@ -15,12 +15,16 @@ local peek = Fusion.peek
 local InventoryController = Knit.CreateController { Name = "InventoryController" }
 type Self = typeof(InventoryController)
 
+function InventoryController:ManageItemTemplate(template: Instance, container: ScrollingFrame)
+	
+end
+
 function InventoryController:OnItemAdded(category: string, itemData: Types.ItemData)
 	local categoriesFold = self.inventoryMenu.Categories
 	
-	local cateogoryContainer = categoriesFold:FindFirstChild(category)
-	if not cateogoryContainer then
-		cateogoryContainer = categoriesFold:FindFirstChild("Misc")
+	local categoryContainer = categoriesFold:FindFirstChild(category)
+	if not categoryContainer then
+		categoryContainer = categoriesFold:FindFirstChild("Misc")
 	end
 	
 	local existingItem = self.inventory[category][itemData.name]
@@ -29,7 +33,7 @@ function InventoryController:OnItemAdded(category: string, itemData: Types.ItemD
 		return
 	end
 	
-	require(Templates:FindFirstChild(category)).new(InventoryTemplates:FindFirstChild(category):Clone(), cateogoryContainer)
+	self:ManageItemTemplate(InventoryTemplates:FindFirstChild(category):Clone(), categoryContainer)
 end
 
 function InventoryController:OnInventoryLoaded(newInventory: {[string]: {[string]: Types.ItemData}})
