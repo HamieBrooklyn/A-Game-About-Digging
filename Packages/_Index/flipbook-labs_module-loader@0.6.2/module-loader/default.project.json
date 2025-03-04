@@ -1,6 +1,0 @@
-{
-  "name": "module-loader",
-  "tree": {
-    "$path": "dist"
-  }
-}
