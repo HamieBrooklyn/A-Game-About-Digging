@@ -43,12 +43,23 @@ function PotionController:OnPotionAdded(potionVal: NumberValue)
 	newTemp.Parent = self.potionsContainer
 	
 	local interact: GuiButton = newTemp.Interact
-	janitor:Add(interact.MouseEnter:Connect(function()
-		self.informationWindow.SetInfo:Fire(potionData.InfoWindow)
-	end))
-	janitor:Add(interact.MouseLeave:Connect(function()
-		self.informationWindow.Cleanup:Fire()
-	end))
+	interact:AddTag("Info")
+	
+	local infoWindowData = potionData.InfoWindow
+	if infoWindowData then
+		local gradients = ""
+		local texts = ""
+		for _, data in infoWindowData do
+			if data.gradient then
+				gradients = gradients == "" and data.gradient or gradients.. ",".. data.gradient
+			end
+			if data.text then
+				texts = texts == "" and data.text or texts.. ",".. data.text
+			end
+		end
+		interact:SetAttribute("Gradients", gradients)
+		interact:SetAttribute("Texts", texts)
+	end
 	
 	local function setDuration(duration: number)
 		newTemp:FindFirstChild("Duration").Text = formatDigitalTime(duration)

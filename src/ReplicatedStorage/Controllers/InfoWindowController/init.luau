@@ -8,6 +8,7 @@ local InfoWindowData = require(ReplicatedStorage.Source.Data.InfoWindow)
 local InfoWindow = require(script.InfoWindow)
 
 local Packages = ReplicatedStorage.Packages
+--local TableUtil = require(Packages.TableUtil)
 local Janitor = require(Packages.Janitor)
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
@@ -20,8 +21,8 @@ type Self = typeof(InfoWindowController)
 
 function InfoWindowController:ManageInfoWindow()
 	self.scope:Observer(self.textStrings):onChange(function()
-		self.gradientNames:set(peek(self.gradientNameStrings) and string.split(peek(self.gradientNameStrings), ",") or nil)
-		self.texts:set(peek(self.textStrings) and string.split(peek(self.textStrings), ",") or nil)
+		self.gradientNames:set(peek(self.gradientNameStrings) and string.split(peek(self.gradientNameStrings), ",") or "")
+		self.texts:set(peek(self.textStrings) and string.split(peek(self.textStrings), ",") or "")
 	end)
 end
 
@@ -30,16 +31,16 @@ function InfoWindowController:OnInfoObjectAdded(object: GuiObject)
 	janitor:Add(object.MouseEnter:Connect(function()
 		self.lastSelectedObject:set(object)
 		
-		self.gradientNameStrings:set(object:GetAttribute("Gradients") or nil)
-		self.textStrings:set(object:GetAttribute("Texts") or nil)
+		self.gradientNameStrings:set(object:GetAttribute("Gradients") or "")
+		self.textStrings:set(object:GetAttribute("Texts") or "")
 	end))
 	
 	local function resetAttempt()
 		if peek(self.lastSelectedObject) ~= object then
 			return
 		end
-		self.gradientNameStrings:set(nil)
-		self.textStrings:set(nil)
+		self.gradientNameStrings:set("")
+		self.textStrings:set("")
 	end
 	janitor:Add(object.MouseLeave:Connect(resetAttempt))
 	object.Destroying:Once(function()

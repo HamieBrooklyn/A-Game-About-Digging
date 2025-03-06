@@ -50,7 +50,6 @@ function InventoryController:ManageItemTemplate(category: string, itemState: Typ
 	local icon: ImageLabel? = temp:FindFirstChild("Icon", true)
 	if icon then
 		if category == "Potions" then
-			print(itemState.name, Potions[itemState.name])
 			icon.Image = Potions[itemState.name].Icon
 		end
 	end
@@ -79,15 +78,26 @@ function InventoryController:ManageItemTemplate(category: string, itemState: Typ
 				self:OnItemUsed(category, itemState)
 			end)
 		end))
-		table.insert(itemScope, interact.MouseEnter:Connect(function()
-			if category == "Potions" then
-				local potionData = Potions[itemState.name]
-				self.informationWindow.SetInfo:Fire(potionData.InfoWindow)
+		if category == "Potions" then
+			local potionData = Potions[itemState.name]
+			interact:AddTag("Info")
+			
+			local infoWindowData = potionData.InfoWindow
+			if infoWindowData then
+				local gradients = ""
+				local texts = ""
+				for _, data in infoWindowData do
+					if data.gradient then
+						gradients = gradients == "" and data.gradient or gradients.. ",".. data.gradient
+					end
+					if data.text then
+						texts = texts == "" and data.text or texts.. ",".. data.text
+					end
+				end
+				interact:SetAttribute("Gradients", gradients)
+				interact:SetAttribute("Texts", texts)
 			end
-		end))
-		table.insert(itemScope, interact.MouseLeave:Connect(function()
-			self.informationWindow.Cleanup:Fire()
-		end))
+		end
 	end
 	
 	temp.Parent = categoryContainer
