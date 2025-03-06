@@ -15,10 +15,11 @@ local InventoryService = Knit.CreateService {
 	Client = {
 		InventoryLoaded = Knit.CreateSignal(),
 		ItemAdded = Knit.CreateSignal(),
+		ItemRemoved = Knit.CreateSignal(),
 	},
 }
-InventoryService.itemUsed = Signal.new()
-InventoryService.itemRemoved = Signal.new()
+InventoryService.ItemUsed = Signal.new()
+InventoryService.ItemRemoved = Signal.new()
 
 type Self = typeof(InventoryService)
 
@@ -42,17 +43,23 @@ function InventoryService:UseItemAttempt(player: Player, category: string, itemN
 	local inventory = playerProfile.Data.Inventory
 	if not inventory[category] then
 		return
-	end	
+	end
+	if not inventory[category][itemName] then
+		return
+	end
 	
 	local item = inventory[category][itemName]
 	item.amount -= 1
 	
+	self.ItemUsed:Fire(player, category, item)
+	
 	local newAmount = item.amount
 	if newAmount <= 0 then
 		inventory[category][itemName] = nil
-		self.itemRemoved:Fire(item)
+		
+		self.ItemRemoved:Fire(player, category, item)
+		self.Client.ItemRemoved:Fire(player, category, item)
 	end
-	self.itemUsed:Fire(item)
 	
 	return newAmount
 end
@@ -72,11 +79,6 @@ function InventoryService:KnitInit()
 	
 	Players.PlayerAdded:Connect(function(player)
 		self.cachedItems[player] = {}
-		
-		self:GivePlayerItem(player, "Potions", {
-			name = "OrePotion",
-			amount = 1,
-		})
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self.cachedItems[player] = nil
@@ -84,7 +86,6 @@ function InventoryService:KnitInit()
 end
 
 function InventoryService:GivePlayerItem(player: Player, category: string, itemData: Types.ItemData)
-	--print("Giving player item", player, category, itemData)
 	if not DataHandler.Profiles[player] then
 		table.insert(self.cachedItems[player], {
 			category = category,
@@ -98,7 +99,7 @@ function InventoryService:GivePlayerItem(player: Player, category: string, itemD
 	local existingItem = playerInventory[category][itemData.name]
 	if existingItem then
 		existingItem.amount += itemData.amount
-		self.Client.ItemAdded:Fire(player, category, existingItem)
+		self.Client.ItemAdded:Fire(player, category, itemData)
 		return
 	end
 	
