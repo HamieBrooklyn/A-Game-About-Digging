@@ -9,10 +9,6 @@ local Packages = ReplicatedStorage:WaitForChild("Packages")
 local Janitor = require(Packages.Janitor)
 local Knit = require(Packages.Knit)
 
-local MessageHandler = require(ReplicatedStorage:WaitForChild("MessageHandler"))
-
-local formatDigitalTime = require(ReplicatedStorage:WaitForChild("formatDigitalTime"))
-
 local PotionController = Knit.CreateController { Name = "PotionController" }
 type Self = typeof(PotionController)
 
@@ -20,12 +16,12 @@ local potionTemplate = ReplicatedStorage.Gui.Templates.Potion
 
 function PotionController:OnPotionUsed(potionName: string)
 	local potionData = Potions[potionName]
-	MessageHandler.NewMessage(potionData.UseText, potionData.UseGradient)
+	self.messageHandler.SendSmallMessage(potionData.UseText, potionData.UseGradient)
 end
 
 function PotionController:OnPotionRunOut(potionName: string)
 	local potionData = Potions[potionName]
-	MessageHandler.NewMessage(potionData.RunOutText, potionData.RunOutGradient)
+	self.messageHandler.SendSmallMessage(potionData.RunOutText, potionData.RunOutGradient)
 end
 
 function PotionController:OnPotionAdded(potionVal: NumberValue)
@@ -62,7 +58,7 @@ function PotionController:OnPotionAdded(potionVal: NumberValue)
 	end
 	
 	local function setDuration(duration: number)
-		newTemp:FindFirstChild("Duration").Text = formatDigitalTime(duration)
+		newTemp:FindFirstChild("Duration").Text = self.formatDigitalTime(duration)
 	end
 	janitor:Add(potionVal.Changed:Connect(function(value)
 		setDuration(value)
@@ -85,6 +81,9 @@ function PotionController:OnPotionRemoved(potionVal: NumberValue)
 end
 
 function PotionController:KnitInit()
+	self.formatDigitalTime = require(ReplicatedStorage:WaitForChild("formatDigitalTime"))
+	self.messageHandler = require(ReplicatedStorage:WaitForChild("MessageHandler"))
+	
 	self.cachedJanitors = {}
 	
 	self.player = Players.LocalPlayer

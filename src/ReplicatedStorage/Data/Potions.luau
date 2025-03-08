@@ -4,7 +4,7 @@ Potions["OrePotion"] = {
 	FormattedName = "Ore Potion",
 	
 	Icon = "rbxassetid://94517821571661",
-	Duration = 60,
+	Duration = 3 * 60,
 	
 	UseText = "Used Ore potion!",
 	UseGradient = "Blue",
@@ -22,7 +22,7 @@ Potions["DigPotion"] = {
 	FormattedName = "Dig Potion",
 	
 	Icon = "rbxassetid://101899553050288",
-	Duration = 60,
+	Duration = 2 * 60,
 	
 	UseText = "Used Dig potion!",
 	UseGradient = "Green",
@@ -40,7 +40,7 @@ Potions["CoinPotion"] = {
 	FormattedName = "Coin Potion",
 	
 	Icon = "rbxassetid://86378544094933",
-	Duration = 60,
+	Duration = 2 * 60,
 	
 	UseText = "Used Coin potion!",
 	UseGradient = "Gold",
