@@ -1,11 +1,16 @@
+-- Services --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Containers --
 local Packages = ReplicatedStorage.Packages
+
+-- Packages --
 local Knit = require(Packages.Knit)
 
-local ControllerName = Knit.CreateController { Name = "ControllerName" }
-type Self = typeof(ControllerName)
+-- Controller
+local CONTROLLER_NAME = Knit.CreateController { Name = "CONTROLLER_NAME" }
+type Self = typeof(CONTROLLER_NAME)
 
-function ControllerName:KnitInit()end
+function CONTROLLER_NAME:KnitInit()end
 
-return ControllerName
+return CONTROLLER_NAME

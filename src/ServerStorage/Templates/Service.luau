@@ -1,11 +1,16 @@
+-- Services --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Containers --
 local Packages = ReplicatedStorage.Packages
+
+-- Packages --
 local Knit = require(Packages.Knit)
 
-local ServiceName = Knit.CreateService { Name = "ServiceName" }
-type Self = typeof(ServiceName)
+-- Service --
+local SERVICE_NAME = Knit.CreateService { Name = "SERVICE_NAME" }
+type Self = typeof(SERVICE_NAME)
 
-function ServiceName:KnitInit()end
+function SERVICE_NAME:KnitInit()end
 
-return ServiceName
+return SERVICE_NAME
