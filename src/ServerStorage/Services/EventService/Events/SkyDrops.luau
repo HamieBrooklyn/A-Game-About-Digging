@@ -24,8 +24,8 @@ local SkyDrops = {}
 local function onEvent(player: Player)
 	local worldsUnlocked: NumberValue = player.Info.WorldsUnlocked
 	for i=1, worldsUnlocked.Value do
-		local worldDrops = MainData.Worlds[i].Drops
-		if not worldDrops then
+		local worldDropsData = MainData.Worlds[i]
+		if not worldDropsData then
 			continue
 		end
 		
