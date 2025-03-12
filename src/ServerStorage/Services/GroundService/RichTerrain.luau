@@ -82,11 +82,11 @@ local function onPlayerDataLoaded(player: Player)
 	if #cachedClusters == 0 then
 		for _, worldFold in Worlds:GetChildren() do
 			for _, terrainPart in worldFold.TerrainParts:GetChildren() do
-				--generateRichTerrainPointsOnPart(player, terrainPart)
+				generateRichTerrainPointsOnPart(player, terrainPart)
 			end
 		end
 	end
-	generateRichTerrainPointsOnPart(player, workspace.RichTerrainSpawn)
+	--generateRichTerrainPointsOnPart(player, workspace.RichTerrainSpawn)
 	GroundService.Client.RichTerrainPointsLoaded:Fire(player, cachedClusters)
 end
 

@@ -21,18 +21,21 @@ local generateCluster = require(script.generateCluster)
 local RichTerrain = {}
 
 -- Variables --
-local clusterRenderDistance = 25
+local clusterRenderDistance = 50
 
 local player = Players.LocalPlayer
 
 local hum: Humanoid?
 
+local pointContainers: { [Model]: Vector3 } = {}
 local clusterJanitor = Janitor.new()
 local clusters: {
 	[Model]: {
+		pointsGenerated: number,
 		points: {
 			[number]: {
 				isGenerated: boolean,
+				container: Model,
 				
 				position: Vector3,
 				radius: number,
@@ -41,10 +44,15 @@ local clusters: {
 	}
 } = {}
 
+local clustersFolder = Instance.new("Folder")
+clustersFolder.Name = "RichTerrainClusters"
+clustersFolder.Parent = workspace
+
 -- Functions --
 local function cleanupCachedClusters()
-	clusterJanitor:Cleanup()
+	pointContainers = {}
 	clusters = {}
+	clusterJanitor:Cleanup()
 end
 
 local function onRichTerrainPointsLoaded(loadedClusters: {
@@ -58,19 +66,31 @@ local function onRichTerrainPointsLoaded(loadedClusters: {
 		container.Name = "RichTerrain"
 		container.Parent = workspace
 		container:AddTag("Highlighted")
+		container:SetAttribute("IgnoreDistance", true)
+		container.Parent = clustersFolder
 
 		local points = {}
 		for _, point in cluster do
-			local pos = point.position
+			local posData = point.position
+			local pos = Vector3.new(posData.X, posData.Y, posData.Z)
+
+			local pointContainer = Instance.new("Model")
+			pointContainer.Name = "Point"
+			pointContainer:PivotTo(CFrame.new(pos))
+			pointContainer.Parent = container
+			pointContainers[pointContainer] = pos
+			
 			table.insert(points, {
 				isGenerated = false,
+				container = pointContainer,
 				
-				position = Vector3.new(pos.X, pos.Y, pos.Z),
+				position = pos,
 				radius = point.radius,
 			})
 		end
 		
 		newClusters[container] = {
+			pointsGenerated = 0,
 			points = points,
 		}
 	end
@@ -88,42 +108,29 @@ local function onHeartbeat()
 	end
 
 	local takenPositions: { [Vector3]: Part } = {}
-	for container, data in clusters do
+	
+	for mainContainer, data in clusters do
 		for _, point in data.points do
-			local canRender = (point.position - char:GetPivot().Position).Magnitude < clusterRenderDistance
+			local canRender = (point.container:GetPivot().Position - char:GetPivot().Position).Magnitude < clusterRenderDistance
 			local isGenerated = point.isGenerated
 			if canRender and not isGenerated then
 				point.isGenerated = true
-				generateCluster(container, point.position, point.radius, takenPositions)
+				data.pointsGenerated += 1
+				generateCluster(point.container, point.position, point.radius, takenPositions)
 			elseif not canRender and isGenerated then
 				point.isGenerated = false
-				
-				local part = takenPositions[point.position]
-				if part then
-					part:Destroy()
-					takenPositions[point.position] = nil
-				end
+				data.pointsGenerated -= 1
+				point.container:ClearAllChildren()
 			end
 		end
-		--[[
-		for _, point in points do
-			local isWithinRange = (point.position - char:GetPivot().Position).Magnitude < renderClusterPointDistance
-			local isGenerated = point.isGenerated
-			if not isGenerated and isWithinRange then
-				point.isGenerated = true
-				
-				generateCluster(container, point.position, point.radius, takenPositions)
-			elseif isGenerated and not isWithinRange then
-				point.isGenerated = false
-
-				local part = takenPositions[point.position]
-				if part then
-					takenPositions[point.position] = nil
-					part:Destroy()
-				end
-			end
+		
+		local highlighted = mainContainer:GetAttribute("Highlighted")
+		local canHighlight = data.pointsGenerated > 0
+		if not highlighted and canHighlight then
+			mainContainer:SetAttribute("Highlighted", true)
+		elseif highlighted and not canHighlight then
+			mainContainer:SetAttribute("Highlighted", false)
 		end
-		]]
 	end
 end
 

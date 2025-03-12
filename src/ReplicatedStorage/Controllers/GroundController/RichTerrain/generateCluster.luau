@@ -30,6 +30,13 @@ local function generateStudClusters(
 					new.CastShadow = false
 					new.Parent = container
 					new.Position = worldSpace
+					
+					task.spawn(function()
+						for i=0.1, 2, 0.1 do
+							new.Size = Vector3.one * i
+							task.wait()
+						end
+					end)
 
 					takenPositions[worldSpace] = new
 				end
