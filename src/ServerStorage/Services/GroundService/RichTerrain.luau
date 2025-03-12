@@ -36,7 +36,7 @@ end
 
 local function generateRichTerrainPointsOnPart(player: Player, part: BasePart)
 	local seed = DataHandler.Profiles[player].Data.RichTerrainSeed
-	print(seed)
+	
 	local rnd = Random.new(seed)
 
 	local minClusters = 10
