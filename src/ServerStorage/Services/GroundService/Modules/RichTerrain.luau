@@ -35,7 +35,11 @@ function isInsideBrick(position, brick)
 end
 
 local function generateRichTerrainPointsOnPart(player: Player, part: BasePart)
-	local seed = DataHandler.Profiles[player].Data.RichTerrainSeed
+	local profile = DataHandler.Profiles[player]
+	if not profile then
+		return
+	end
+	local seed = profile.Data.RichTerrainSeed
 	
 	local rnd = Random.new(seed)
 

@@ -17,14 +17,14 @@ local serviceModules: { ModuleScript } = ServiceModules:GetChildren()
 local requiredModules: { ServiceModule } = {}
 
 -- Service --
-local GroundService = Knit.CreateService {
-    Name = "GroundService",
+local MODULE_SERVICE_NAME = Knit.CreateService {
+    Name = "MODULE_SERVICE_NAME",
     Client = {
         RichTerrainPointsLoaded = Knit.CreateSignal(),
     },
 }
 -- Types --
-type Self = typeof(GroundService)
+type Self = typeof(MODULE_SERVICE_NAME)
 type ServiceModule = {
 	init: (() -> nil)?,
 	onPlayerAdded: ((Player) -> nil)?,
@@ -52,7 +52,7 @@ local function onPlayerDataLoaded(player: Player)
 	callModuleFunction("onPlayerDataLoaded", player)
 end
 
-function GroundService:KnitInit()
+function MODULE_SERVICE_NAME:KnitInit()
 	for _, module in serviceModules do
 		table.insert(requiredModules, require(module))
 	end
@@ -68,4 +68,4 @@ function GroundService:KnitInit()
 	dataLoaded.Event:Connect(onPlayerDataLoaded)
 end
 
-return GroundService
+return MODULE_SERVICE_NAME
