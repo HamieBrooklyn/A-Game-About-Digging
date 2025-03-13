@@ -2,15 +2,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+-- Containers --
+local Ores = script.Ores
+
+-- Utils --
+local getOreData = require(Ores.getOreData)
+
 -- Handlers --
 local DataHandler = require(ServerScriptService.Server.DataHandler)
 
--- Utils --
-local generatePointsFromPart = require(script.generatePointsFromPart)
-local getOreData = require(script.getOreData)
-
 -- Module --
 local ObjectSpawning = {}
+
+ObjectSpawning.ores = getOreData()
+
+ObjectSpawning.generatePointsFromPart = require(script.generatePointsFromPart)
 
 local function sendNewPoints(player: Player, points: {
     [string]: {
@@ -21,12 +27,17 @@ local function sendNewPoints(player: Player, points: {
     
 end
 
+
 ObjectSpawning.init = function()
-	
+    ObjectSpawning.service = require(script.Parent.Parent) 
+    
+	ObjectSpawning.generateOrePoints = require(Ores.generateOrePoints)
 end
 
 ObjectSpawning.onPlayerDataLoaded = function(player: Player)
-	getOreData()
+    local spawnPoints = {}
+    spawnPoints["Ores"] = ObjectSpawning.generateOrePoints(player)
+    print(spawnPoints   )
 end
 
 ObjectSpawning.onPlayerAdded = function(_player: Player)

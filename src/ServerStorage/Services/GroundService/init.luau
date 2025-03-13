@@ -21,6 +21,7 @@ local GroundService = Knit.CreateService {
     Name = "GroundService",
     Client = {
         RichTerrainPointsLoaded = Knit.CreateSignal(),
+		SpawningPointsLoaded = Knit.CreateSignal(),
     },
 }
 -- Types --

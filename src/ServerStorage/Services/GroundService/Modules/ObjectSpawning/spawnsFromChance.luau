@@ -4,19 +4,22 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Utils --
 local fromRandomWeight = require(ReplicatedStorage.Source.Utils.fromRandomWeight)
 
-local function generatePointsFromPart(part: BasePart, possibleSpawns: {
+local function spawnsFromChance(part: BasePart, possibleSpawns: {
     [number]: {
         Name: string,
         Chance: number,
     }
-}, spawnAmount: number)
+})
     local spawnChances = {}
     for _, data in possibleSpawns do
         spawnChances[data.Name] = data.Chance
     end
 
-    for i=1, spawnAmount do
-        print(fromRandomWeight(spawnChances))
+    local chosenSpawns = {}
+    for _=1, part:GetAttribute("SpawnAmount") do
+        table.insert(chosenSpawns, fromRandomWeight(spawnChances))
     end
+    
+    return chosenSpawns
 end
-return generatePointsFromPart
+return spawnsFromChance
