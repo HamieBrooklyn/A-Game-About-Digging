@@ -6,46 +6,52 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Ores = script.Ores
 
 -- Utils --
+local isInBrick = require(ReplicatedStorage.Source.Utils.isInBrick)
 local getOreData = require(Ores.getOreData)
 
 -- Handlers --
 local DataHandler = require(ServerScriptService.Server.DataHandler)
+
+-- Events --
+local Dug = ReplicatedStorage.Events.Bindable.Dug
 
 -- Module --
 local ObjectSpawning = {}
 
 ObjectSpawning.ores = getOreData()
 
-ObjectSpawning.generatePointsFromPart = require(script.generatePointsFromPart)
-
-local function sendNewPoints(player: Player, points: {
-    [string]: {
-            [number]: { name: string, position: Vector3 }
-        }
-    }
-)
-    
-end
-
+ObjectSpawning.getSpawnsFromChance = require(script.getSpawnsFromChance)
 
 ObjectSpawning.init = function()
-    ObjectSpawning.service = require(script.Parent.Parent) 
-    
+	ObjectSpawning.service = require(script.Parent.Parent) 
+	
 	ObjectSpawning.generateOrePoints = require(Ores.generateOrePoints)
+	ObjectSpawning.onPlayerDug = require(script.onPlayerDug)
+	
+	ObjectSpawning.playerSpawnPoints = {}
+	
+	Dug.Event:Connect(ObjectSpawning.onPlayerDug)
 end
 
 ObjectSpawning.onPlayerDataLoaded = function(player: Player)
-    local spawnPoints = {}
-    spawnPoints["Ores"] = ObjectSpawning.generateOrePoints(player)
-    print(spawnPoints   )
+	if not ObjectSpawning.playerSpawnPoints[player] then
+		return
+	end
+	
+	local spawnPoints = {}
+	spawnPoints["Ores"] = ObjectSpawning.generateOrePoints(player)
+	
+	ObjectSpawning.playerSpawnPoints[player] = spawnPoints
+	
+	ObjectSpawning.service.Client.SpawningPointsLoaded:Fire(player, spawnPoints)
 end
 
-ObjectSpawning.onPlayerAdded = function(_player: Player)
-	
+ObjectSpawning.onPlayerAdded = function(player: Player)
+	ObjectSpawning.playerSpawnPoints[player] = {}
 end
 
-ObjectSpawning.onPlayerRemoving = function(_player: Player)
-	
+ObjectSpawning.onPlayerRemoving = function(player: Player)
+	ObjectSpawning.playerSpawnPoints[player] = nil
 end
 
 return ObjectSpawning

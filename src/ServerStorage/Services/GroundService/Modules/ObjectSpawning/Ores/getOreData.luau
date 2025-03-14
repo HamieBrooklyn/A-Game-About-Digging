@@ -23,7 +23,7 @@ local function getOreData()
                     continue
                 end
                 
-                for _, spawnData in levelData do
+                for _, spawnData in levelData.Spawns do
                     table.insert(out, {
                         Name = spawnData.Name,
                         Chance = spawnData.Chance,

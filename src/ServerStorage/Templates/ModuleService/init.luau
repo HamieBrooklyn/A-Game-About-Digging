@@ -19,9 +19,7 @@ local requiredModules: { ServiceModule } = {}
 -- Service --
 local MODULE_SERVICE_NAME = Knit.CreateService {
     Name = "MODULE_SERVICE_NAME",
-    Client = {
-        RichTerrainPointsLoaded = Knit.CreateSignal(),
-    },
+    Client = {},
 }
 -- Types --
 type Self = typeof(MODULE_SERVICE_NAME)
@@ -54,13 +52,9 @@ end
 
 function MODULE_SERVICE_NAME:KnitInit()
 	for _, module in serviceModules do
-		table.insert(requiredModules, require(module))
+		requiredModules[module.Name] = require(module)
 	end
-	for _, serviceMod in requiredModules do
-		if serviceMod.init then
-			serviceMod.init()
-		end
-	end
+	callModuleFunction("init")
 	
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	Players.PlayerRemoving:Connect(onPlayerRemoving)

@@ -14,12 +14,12 @@ local controllerModules: { ModuleScript } = ControllerModules:GetChildren()
 local requiredModules: { ControllerModule } = {}
 
 -- Service --
-local GroundController = Knit.CreateController {
-    Name = "GroundController",
+local MODULE_CONTROLLER_NAME = Knit.CreateController {
+    Name = "MODULE_CONTROLLER_NAME",
     Client = {},
 }
 -- Types --
-type Self = typeof(GroundController)
+type Self = typeof(MODULE_CONTROLLER_NAME)
 type ControllerModule = {
 	init: (() -> nil)?,
 }
@@ -33,13 +33,11 @@ local function callModuleFunction(functionKey: string, ...)
 	end
 end
 
-function GroundController:KnitInit()
-	self.service = Knit.GetService("GroundService")
-
+function MODULE_CONTROLLER_NAME:KnitInit()
 	for _, module in controllerModules do
 		requiredModules[module.Name] = require(module)
 	end
 	callModuleFunction("init")
 end
 
-return GroundController
+return MODULE_CONTROLLER_NAME
