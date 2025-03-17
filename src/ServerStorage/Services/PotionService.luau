@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local DataHandler = require(ServerScriptService.Server.DataHandler)
+local PlayerStore = require(ServerScriptService.Profile.PlayerStore)
 
 local Data = ReplicatedStorage.Source.Data
 local Potions = require(Data.Potions)
@@ -16,7 +16,7 @@ local PotionService = Knit.CreateService { Name = "PotionService" }
 type Self = typeof(PotionService)
 
 function PotionService:UsePotion(player: Player, potionName: string, duration: number, ignoreSave: boolean?)
-	local profile = DataHandler.Profiles[player]
+	local profile = PlayerStore:GetAsync(tostring(player.UserId))
 	if not profile then
 		local existingPotion = self.cachedPotions[player][potionName]
 		if existingPotion then
@@ -49,15 +49,15 @@ function PotionService:UsePotion(player: Player, potionName: string, duration: n
 		table.insert(self.cachedPotionValues[player], potionVal)
 		
 		janitor:Add(potionVal.Changed:Connect(function(value)
-			if DataHandler.Profiles[player] then
-				DataHandler.Profiles[player].Data.ActivePotions[potionName] = value
+			if PlayerStore:GetAsync(tostring(player.UserId)) then
+				PlayerStore:GetAsync(tostring(player.UserId)).Data.ActivePotions[potionName] = value
 			end
 		end))
 		potionVal.Destroying:Once(function()
-			if not DataHandler.Profiles[player] then
+			if not PlayerStore:GetAsync(tostring(player.UserId)) then
 				return
 			end
-			DataHandler.Profiles[player].Data.ActivePotions[potionName] = nil
+			PlayerStore:GetAsync(tostring(player.UserId)).Data.ActivePotions[potionName] = nil
 		end)
 	end
 	
@@ -85,7 +85,7 @@ function PotionService:OnPlayerDataLoaded(player: Player)
 	potions.Name = "Potions"
 	potions.Parent = player
 	
-	for potionName: string, duration: number in DataHandler.Profiles[player].Data.ActivePotions do
+	for potionName: string, duration: number in PlayerStore:GetAsync(tostring(player.UserId)).Data.ActivePotions do
 		self:UsePotion(player, potionName, duration, true)
 	end
 	for potionName: string, duration: number in self.cachedPotions[player] do

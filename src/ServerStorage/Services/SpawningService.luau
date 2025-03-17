@@ -8,9 +8,11 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 
 -- Service --
-local SERVICE_NAME = Knit.CreateService { Name = "SERVICE_NAME" }
-type Self = typeof(SERVICE_NAME)
+local SpawningService = Knit.CreateService { Name = "SpawningService" }
+type Self = typeof(SpawningService)
 
-function SERVICE_NAME:KnitInit()end
+function SpawningService:KnitInit()
+	
+end
 
-return SERVICE_NAME
+return SpawningService
