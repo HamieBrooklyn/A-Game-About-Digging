@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 -- Containers --
+local WorldTerrainUtils = ReplicatedStorage.Source.Utils.WorldTerrain
 local Packages = ReplicatedStorage.Packages
 
 -- Packages --
@@ -14,6 +15,9 @@ local Knit = require(Packages.Knit)
 -- Modules --
 local WorldTerrainSpawning = require(ReplicatedStorage.Source.Data.WorldTerrainSpawning)
 
+local getWorldVariantFolder = require(WorldTerrainUtils.getWorldVariantFolder)
+local getMaterialFromWorld = require(WorldTerrainUtils.getMaterialFromWorld)
+
 -- Local --
 local player = Players.LocalPlayer
 
@@ -21,23 +25,18 @@ local char: Model?, hum: Humanoid?
 
 local streamingTerrainParts = {}
 local loadedTerrainParts = {}
+local digPoints: {
+	[number]: {
+		[number]: {
+			position: { x: Vector3, y: Vector3, z: Vector3 },
+			radius: number,
+		}
+	}
+} = {}
 
 -- Controller --
 local WorldTerrainController = Knit.CreateController { Name = "WorldTerrainController" }
 type Self = typeof(WorldTerrainController)
-
-function WorldTerrainController:GetWorldVariantFolder(worldIndex: number): Folder?
-	return ReplicatedStorage.Assets.MaterialVariants.Worlds:FindFirstChild(tostring(worldIndex))
-end
-
-function WorldTerrainController:GetMaterialFromPart(part: BasePart)
-	local worldVariantsFold: Folder? = self:GetWorldVariantFolder(part:GetAttribute("WorldIndex"))
-	if not worldVariantsFold then
-		return Enum.Material[part.Name]
-	end
-	local variant: MaterialVariant? = worldVariantsFold:FindFirstChild(part.Name)
-	return variant
-end
 
 function WorldTerrainController:LoadTerrainPart(part: BasePart)
 	if table.find(loadedTerrainParts, part) then
@@ -45,7 +44,19 @@ function WorldTerrainController:LoadTerrainPart(part: BasePart)
 	end
 	table.insert(loadedTerrainParts, part)
 	
-	workspace.Terrain:FillBlock(part.CFrame, part.Size, self:GetMaterialFromPart(part))
+	local partWorldIndex = part:GetAttribute("WorldIndex")
+	
+	workspace.Terrain:FillBlock(part.CFrame, part.Size, Enum.Material[getMaterialFromWorld(part.Name, partWorldIndex).Name])
+	
+	for worldIndex: number, points in digPoints do
+		if worldIndex ~= partWorldIndex then
+			continue
+		end
+		for _, point in points do
+			local pos = point.position
+			workspace.Terrain:FillBall(Vector3.new(pos.x, pos.y, pos.z), point.radius, Enum.Material.Air)
+		end
+	end
 end
 
 function WorldTerrainController:UnloadTerrainPart(part: BasePart)
@@ -58,6 +69,9 @@ end
 function WorldTerrainController:ManageStreaming()
 	for _, worldFold: Folder in workspace.Worlds:GetChildren() do
 		Streamable.new(worldFold, "TerrainParts"):Observe(function(terrainParts: Model, trove)
+			for _, part in terrainParts:GetChildren() do
+				table.insert(streamingTerrainParts, part)
+			end
 			trove:Add(terrainParts.ChildAdded:Connect(function(part: BasePart)
 				table.insert(streamingTerrainParts, part)
 			end))
@@ -86,9 +100,8 @@ function WorldTerrainController:Heartbeat()
 	end
 end
 
-
 function WorldTerrainController:ResetVariantsForWorld(worldIndex: number)
-	local worldVariantsFold: Folder? = self:GetWorldVariantFolder(worldIndex)
+	local worldVariantsFold: Folder? = getWorldVariantFolder(worldIndex)
 	if not worldVariantsFold then
 		return
 	end
@@ -98,7 +111,7 @@ function WorldTerrainController:ResetVariantsForWorld(worldIndex: number)
 end
 
 function WorldTerrainController:SetVariantsForWorld(worldIndex: number)
-	local worldVariantsFold: Folder? = self:GetWorldVariantFolder(worldIndex)
+	local worldVariantsFold: Folder? = getWorldVariantFolder(worldIndex)
 	if not worldVariantsFold then
 		return
 	end
@@ -112,7 +125,21 @@ function WorldTerrainController:ManageCurrentWorld(worldIndex: number)
 	self:SetVariantsForWorld(worldIndex)
 end
 
+function WorldTerrainController:ManageAddedCharacter(addedChar: Model?)
+	if not addedChar then
+		return
+	end
+	char = addedChar
+	hum = addedChar:FindFirstChildWhichIsA("Humanoid")
+end
+
 function WorldTerrainController:KnitInit()
+	local WorldTerrainService = Knit.GetService("WorldTerrainService")
+	WorldTerrainService.DigPointsLoaded:Connect(function(loadedDigPoints)
+		digPoints = loadedDigPoints
+		loadedTerrainParts = {}
+	end)
+	
 	local ProfileStoreService = Knit.GetService("ProfileStoreService")
 	ProfileStoreService.ProfileLoaded:Connect(function()
 		local currentWorldVal: NumberValue = player.Data.CurrentWorld
@@ -128,9 +155,9 @@ function WorldTerrainController:KnitInit()
 	end)
 	
 	player.CharacterAdded:Connect(function(addedChar)
-		char = addedChar
-		hum = addedChar:FindFirstChildWhichIsA("Humanoid")
+		self:ManageAddedCharacter(addedChar)
 	end)
+	self:ManageAddedCharacter(player.Character)
 	
 	RunService.Heartbeat:Connect(function()
 		self:Heartbeat()
