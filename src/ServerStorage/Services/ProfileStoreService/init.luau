@@ -20,7 +20,12 @@ local ProfileStore = require(script.ProfileStore)
 local playerProfileJanitors = {}
 
 -- Service --
-local ProfileStoreService = Knit.CreateService { Name = "ProfileStoreService" }
+local ProfileStoreService = Knit.CreateService {
+	Name = "ProfileStoreService",
+	Client = {
+		ProfileLoaded = Knit.CreateSignal()
+	},
+}
 
 -- Signals --
 ProfileStoreService.PlayerProfileLoaded = Signal.new()
@@ -90,6 +95,7 @@ function ProfileStoreService:ManageAddedPlayer(player: Player)
 			
 			print(`Profile loaded for {player.DisplayName}!`)
 			self.PlayerProfileLoaded:Fire(player)
+			self.Client.ProfileLoaded:Fire(player)
 		else
 			profile:EndSession()
 		end
