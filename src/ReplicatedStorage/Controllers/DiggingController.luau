@@ -163,6 +163,9 @@ function DiggingController:TriggerDigEffect(otherPlayer: Player, materialDugName
 			CFrame = targetCF
 		}):Play()
 		TweenService:Create(part, tweenInfo, {
+			Size = Vector3.zero
+		}):Play()
+		TweenService:Create(part, tweenInfo, {
 			Transparency = 1
 		}):Play()
 		
@@ -192,7 +195,7 @@ function DiggingController:TapEffect()
 	frame.Size = UDim2.fromScale(0, 0)
 	
 	frame.BackgroundColor3 = Color3.new(1, 1, 1)
-	frame.BackgroundTransparency = 0
+	frame.BackgroundTransparency = 0.5
 	
 	local ratio = Instance.new("UIAspectRatioConstraint")
 	ratio.Parent = frame
@@ -223,7 +226,9 @@ function DiggingController:UpdateCooldownGui()
 	end
 	local equippedToolIndex = math.min(playerDataFold.ToolEquipped.Value, 1)
 	local toolData = Digging.Tools[equippedToolIndex]
+	
 	self.digCooldownCanvas.Container.Fill.Size = UDim2.fromScale(1 - math.clamp((tick() - lastDig) / toolData.Cooldown, 0, 1), 1)
+	self.digCooldownCanvas.Visible = true
 end
 
 function DiggingController:KnitInit()
