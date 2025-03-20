@@ -1,17 +1,19 @@
 -- Services --
-local Debris = game:GetService("Debris")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local SoundService = game:GetService("SoundService")
-local StarterGui = game:GetService("StarterGui")
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
 
 -- Containers --
 local Packages = ReplicatedStorage.Packages
 local Data = ReplicatedStorage.Source.Data
 
 -- Modules --
+local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
 
 local Materials = require(Data.Materials)
@@ -38,22 +40,25 @@ local mouse = player:GetMouse()
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
-local digDB = false
-
--- function DiggingController:GetToolFromIndex(toolIndex: number)
--- 	for _, tool: Tool in ReplicatedStorage.Assets.Tools.Digging:GetChildren() do
--- 		if tool:GetAttribute("Index") ~= toolIndex then
--- 			continue
--- 		end
--- 		return tool
--- 	end
--- end
+local lastDig = 0
 
 function DiggingController:Dig()
 	if not char or not hum or hum.Health <= 0 then
 		return
 	end
 	if digDB then
+		return
+	end
+	
+	raycastParams.FilterDescendantsInstances = {char:GetDescendants()}
+	
+	local playerDataFold: Folder? = player:FindFirstChild("Data")
+	if not playerDataFold then
+		return
+	end
+	local equippedToolIndex = math.min(playerDataFold.ToolEquipped.Value, 1)
+	local toolData = Digging.Tools[equippedToolIndex]
+	if tick() - lastDig <= toolData.Cooldown then
 		return
 	end
 	
@@ -66,24 +71,14 @@ function DiggingController:Dig()
 		return
 	end
 	
-	local playerDataFold: Folder? = player:FindFirstChild("Data")
-	if not playerDataFold then
-		return
-	end
-	local equippedToolIndex = math.min(playerDataFold.ToolEquipped.Value, 1)
 	local currentWorld = playerDataFold.CurrentWorld.Value
 	local material = getMaterialFromWorld(result.Material.Name, currentWorld, true).Name
-	
-	local toolData = Digging.Tools[equippedToolIndex]
 	
 	if not string.find(toolData.Terrain, material) then
 		return
 	end
 	
-	digDB = true
-	task.delay(toolData.Cooldown, function()
-		digDB = false
-	end)
+	lastDig = tick()
 	
 	local digPos = result.Position + camera.CFrame.LookVector * toolData.Radius / 2
 	self.DiggingService:DigAttempt(digPos):andThen(function(digSuccess: boolean?)
@@ -159,6 +154,7 @@ function DiggingController:TriggerDigEffect(otherPlayer: Player, materialDugName
 		part.CastShadow = false
 		
 		part.Color = materialColor
+		part.TopSurface = Enum.SurfaceType.Smooth
 		
 		local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 		
@@ -187,6 +183,49 @@ function DiggingController:TriggerDigEffect(otherPlayer: Player, materialDugName
 	end)
 end
 
+function DiggingController:TapEffect()
+	local frame = Instance.new("Frame")
+	frame.Name = "Tap"
+	
+	frame.AnchorPoint = Vector2.new(0.5, 0.5)
+	frame.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
+	frame.Size = UDim2.fromScale(0, 0)
+	
+	frame.BackgroundColor3 = Color3.new(1, 1, 1)
+	frame.BackgroundTransparency = 0
+	
+	local ratio = Instance.new("UIAspectRatioConstraint")
+	ratio.Parent = frame
+	
+	local corner = Instance.new("UICorner")
+	corner.Parent = frame
+	corner.CornerRadius = UDim.new(1, 0)
+	
+	local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(frame, tweenInfo, {
+		Size = UDim2.fromScale(0.2, 0.2)
+	}):Play()
+	TweenService:Create(frame, tweenInfo, {
+		BackgroundTransparency = 1
+	}):Play()
+	
+	Debris:AddItem(frame, tweenInfo.Time)
+	
+	frame.Parent = self.tapFrameContainer
+end
+
+function DiggingController:UpdateCooldownGui()
+	self.digCooldownCanvas.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
+	
+	local playerDataFold: Folder? = player:FindFirstChild("Data")
+	if not playerDataFold then
+		return
+	end
+	local equippedToolIndex = math.min(playerDataFold.ToolEquipped.Value, 1)
+	local toolData = Digging.Tools[equippedToolIndex]
+	self.digCooldownCanvas.Container.Fill.Size = UDim2.fromScale(1 - math.clamp((tick() - lastDig) / toolData.Cooldown, 0, 1), 1)
+end
+
 function DiggingController:KnitInit()
 	self.WorldTerrainController = Knit.GetController("WorldTerrainController")
 	self.DiggingService = Knit.GetService("DiggingService")
@@ -198,17 +237,32 @@ function DiggingController:KnitInit()
 		self:ManageAddedCharacter(addedChar)
 	end)
 	
+	self.playerGui = player:WaitForChild("PlayerGui")
+	self.mainGui = self.playerGui:WaitForChild("Main")
+	
+	self.digCooldownCanvas = self.mainGui:WaitForChild("DigCooldown")
+	
+	local tapFrameContainer = Instance.new("Folder")
+	tapFrameContainer.Name = "Taps"
+	tapFrameContainer.Parent = self.mainGui
+	self.tapFrameContainer = tapFrameContainer
+	
 	UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 		if gameProcessedEvent then
 			return
 		end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			self:TapEffect()
 			self:Dig()
 		end
 	end)
 	
 	self.DiggingService.TriggerDigEffectsForPlayer:Connect(function(...)
 		self:TriggerDigEffect(...)
+	end)
+	
+	RunService.RenderStepped:Connect(function()
+		self:UpdateCooldownGui()
 	end)
 end
 
