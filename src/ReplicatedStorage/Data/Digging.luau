@@ -1,6 +1,6 @@
 local Digging = {}
 
-Digging.MAX_DIGGING_DISTANCE = 60
+Digging.MAX_DIGGING_DISTANCE = 30
 
 Digging.Tools = {
 	[1] = {

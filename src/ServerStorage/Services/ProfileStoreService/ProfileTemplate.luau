@@ -1,5 +1,9 @@
 local ProfileTemplate = {}
 
+ProfileTemplate.Coins = 0
+ProfileTemplate.Dirt = 0
+ProfileTemplate.Storage = 30
+
 ProfileTemplate.CurrentWorld = 1
 
 ProfileTemplate.ToolUpgrade = 1

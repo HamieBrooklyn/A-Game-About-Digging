@@ -13,6 +13,8 @@ local Packages = ReplicatedStorage.Packages
 local Data = ReplicatedStorage.Source.Data
 
 -- Modules --
+local Currency = require(ReplicatedStorage.Source.Data.Currency)
+
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
 
@@ -46,9 +48,6 @@ function DiggingController:Dig()
 	if not char or not hum or hum.Health <= 0 then
 		return
 	end
-	if digDB then
-		return
-	end
 	
 	raycastParams.FilterDescendantsInstances = {char:GetDescendants()}
 	
@@ -59,6 +58,10 @@ function DiggingController:Dig()
 	local equippedToolIndex = math.min(playerDataFold.ToolEquipped.Value, 1)
 	local toolData = Digging.Tools[equippedToolIndex]
 	if tick() - lastDig <= toolData.Cooldown then
+		return
+	end
+	
+	if playerDataFold.Dirt.Value >= playerDataFold.Storage.Value then
 		return
 	end
 	
@@ -86,6 +89,10 @@ function DiggingController:Dig()
 			return
 		end
 		workspace.Terrain:FillBall(digPos, toolData.Radius, Enum.Material.Air)
+		
+		self.PopupController:SendIcons({
+			[Currency.PopupIcons.Dirt] = Materials[material].Give
+		}, player.PlayerGui.Main.Sides.Left.Dirt.Position)
 	end)
 end
 
@@ -214,11 +221,12 @@ function DiggingController:TapEffect()
 	
 	Debris:AddItem(frame, tweenInfo.Time)
 	
-	frame.Parent = self.tapFrameContainer
+	frame.Parent = self.screenGui
 end
 
 function DiggingController:UpdateCooldownGui()
-	self.digCooldownCanvas.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
+	local digCooldownCanvas = player.PlayerGui:WaitForChild("Main"):WaitForChild("DigCooldown")
+	digCooldownCanvas.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
 	
 	local playerDataFold: Folder? = player:FindFirstChild("Data")
 	if not playerDataFold then
@@ -227,12 +235,13 @@ function DiggingController:UpdateCooldownGui()
 	local equippedToolIndex = math.min(playerDataFold.ToolEquipped.Value, 1)
 	local toolData = Digging.Tools[equippedToolIndex]
 	
-	self.digCooldownCanvas.Container.Fill.Size = UDim2.fromScale(1 - math.clamp((tick() - lastDig) / toolData.Cooldown, 0, 1), 1)
-	self.digCooldownCanvas.Visible = true
+	digCooldownCanvas.Container.Fill.Size = UDim2.fromScale(1 - math.clamp((tick() - lastDig) / toolData.Cooldown, 0, 1), 1)
+	digCooldownCanvas.Visible = true
 end
 
 function DiggingController:KnitInit()
 	self.WorldTerrainController = Knit.GetController("WorldTerrainController")
+	self.PopupController = Knit.GetController("PopupController")
 	self.DiggingService = Knit.GetService("DiggingService")
 	
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
@@ -242,15 +251,12 @@ function DiggingController:KnitInit()
 		self:ManageAddedCharacter(addedChar)
 	end)
 	
-	self.playerGui = player:WaitForChild("PlayerGui")
-	self.mainGui = self.playerGui:WaitForChild("Main")
-	
-	self.digCooldownCanvas = self.mainGui:WaitForChild("DigCooldown")
-	
-	local tapFrameContainer = Instance.new("Folder")
-	tapFrameContainer.Name = "Taps"
-	tapFrameContainer.Parent = self.mainGui
-	self.tapFrameContainer = tapFrameContainer
+	local scope = Fusion:scoped()
+	self.screenGui = scope:New "ScreenGui" {
+		Name = "DigEffects",
+		Parent = Players.LocalPlayer.PlayerGui,
+		ResetOnSpawn = false,
+	}
 	
 	UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 		if gameProcessedEvent then

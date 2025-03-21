@@ -6,9 +6,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DiggingTools = ReplicatedStorage.Assets.Tools.Digging
 local Packages = ReplicatedStorage.Packages
 local Utils = ReplicatedStorage.Source.Utils
+local Data = ReplicatedStorage.Source.Data
 
 -- Modules --
-local Digging = require(ReplicatedStorage.Source.Data.Digging)
+local Materials = require(Data.Materials)
+local Digging = require(Data.Digging)
 
 local Knit = require(Packages.Knit)
 
@@ -63,6 +65,16 @@ function DiggingService:CheckValidMaterialOnPosition(player: Player, position: V
 	return string.find(Digging.Tools[equippedToolIndex].Terrain, material) ~= nil, terrainPart
 end
 
+function DiggingService:ManageDigRewards(player: Player, materialName: string)
+	local playerDataFold: Folder = player:FindFirstChild("Data")
+	if not playerDataFold then
+		return
+	end
+	
+	local dirt = playerDataFold.Dirt
+	dirt.Value = math.clamp(dirt.Value + Materials[materialName].Give, 0, playerDataFold.Storage.Value)
+end
+
 function DiggingService:DigAttempt(player: Player, digPosition: Vector3)
 	if not digPosition or typeof(digPosition) ~= "Vector3" then
 		return
@@ -78,6 +90,14 @@ function DiggingService:DigAttempt(player: Player, digPosition: Vector3)
 	end
 	
 	if (char:GetPivot().Position - digPosition).Magnitude > Digging.MAX_DIGGING_DISTANCE then
+		return
+	end
+	
+	local playerDataFold: Folder = player:FindFirstChild("Data")
+	if not playerDataFold then
+		return
+	end
+	if playerDataFold.Dirt.Value >= playerDataFold.Storage.Value then
 		return
 	end
 	
@@ -113,6 +133,8 @@ function DiggingService:DigAttempt(player: Player, digPosition: Vector3)
 	for _, otherPlayer in Players:GetPlayers() do
 		self.Client.TriggerDigEffectsForPlayer:Fire(otherPlayer, player, terrainPart.Name, digPosition)
 	end
+	
+	self:ManageDigRewards(player, terrainPart.Name)
 	
 	return true
 end
