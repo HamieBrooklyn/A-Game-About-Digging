@@ -42,7 +42,23 @@ local mouse = player:GetMouse()
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
+local lastStorageWarning = 0
 local lastDig = 0
+
+function DiggingController:TriggerFullStorageEffect()
+	if tick() - lastStorageWarning < Digging.FULL_STORAGE_WARNING_COOLDOWN then
+		return
+	end
+	lastStorageWarning = tick()
+	
+	self.PopupController:AddMessage("FullStorage", "Large", "Max Storage", ColorSequence.new(
+		Color3.fromHex("#FF0066"),
+		Color3.fromHex("#9F2354")
+	))
+	task.delay(Digging.FULL_STORAGE_WARNING_COOLDOWN / 2, function()
+		self.PopupController:RemoveMessage("FullStorage", "Large")
+	end)
+end
 
 function DiggingController:Dig()
 	if not char or not hum or hum.Health <= 0 then
@@ -60,8 +76,10 @@ function DiggingController:Dig()
 	if tick() - lastDig <= toolData.Cooldown then
 		return
 	end
+	lastDig = tick()
 	
 	if playerDataFold.Dirt.Value >= playerDataFold.Storage.Value then
+		self:TriggerFullStorageEffect()
 		return
 	end
 	
@@ -81,8 +99,6 @@ function DiggingController:Dig()
 		return
 	end
 	
-	lastDig = tick()
-	
 	local digPos = result.Position + camera.CFrame.LookVector * toolData.Radius / 2
 	self.DiggingService:DigAttempt(digPos):andThen(function(digSuccess: boolean?)
 		if not digSuccess then
@@ -90,9 +106,13 @@ function DiggingController:Dig()
 		end
 		workspace.Terrain:FillBall(digPos, toolData.Radius, Enum.Material.Air)
 		
+		local dirtLabel = player.PlayerGui.Main.Sides.Left.Dirt
 		self.PopupController:SendIcons({
 			[Currency.PopupIcons.Dirt] = Materials[material].Give
-		}, player.PlayerGui.Main.Sides.Left.Dirt.Position)
+		}, dirtLabel.Position, function()
+			self.GuiAnimationController:Bounce(dirtLabel)
+			Sound.new(SoundService.SoundEffects.Gui.SoftPop)
+		end)
 	end)
 end
 
@@ -239,8 +259,17 @@ function DiggingController:UpdateCooldownGui()
 	digCooldownCanvas.Visible = true
 end
 
+function DiggingController:ManageTeleportButton()
+	self.scope:Hydrate(self.mainGui.Sides.Bottom.Middle.Upper.GoUp) {
+		GroupTransparency = self.scope:Tween(self.scope:Computed(function(use: Fusion.Use)
+			return use(self.teleportButtonShown) and 0 or 1
+		end), Digging.Gui.TeleportButton.TWEEN_INFO)
+	}
+end
+
 function DiggingController:KnitInit()
 	self.WorldTerrainController = Knit.GetController("WorldTerrainController")
+	self.GuiAnimationController = Knit.GetController("GuiAnimationController")
 	self.PopupController = Knit.GetController("PopupController")
 	self.DiggingService = Knit.GetService("DiggingService")
 	
@@ -251,12 +280,19 @@ function DiggingController:KnitInit()
 		self:ManageAddedCharacter(addedChar)
 	end)
 	
-	local scope = Fusion:scoped()
-	self.screenGui = scope:New "ScreenGui" {
+	self.playerGui = player.PlayerGui
+	self.mainGui = self.playerGui:WaitForChild("Main")
+	
+	self.scope = Fusion:scoped()
+	self.screenGui = self.scope:New "ScreenGui" {
 		Name = "DigEffects",
 		Parent = Players.LocalPlayer.PlayerGui,
 		ResetOnSpawn = false,
 	}
+	
+	self.teleportButtonShown = self.scope:Value(false) :: Fusion.Value<boolean>
+	self.fullStorage = self.scope:Value(false) :: Fusion.Value<boolean>
+	self:ManageTeleportButton()
 	
 	UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 		if gameProcessedEvent then

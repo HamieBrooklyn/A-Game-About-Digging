@@ -70,9 +70,11 @@ function WorldTerrainController:ManageStreaming()
 	for _, worldFold: Folder in workspace.Worlds:GetChildren() do
 		Streamable.new(worldFold, "TerrainParts"):Observe(function(terrainParts: Model, trove)
 			for _, part in terrainParts:GetChildren() do
+				print(part)
 				table.insert(streamingTerrainParts, part)
 			end
 			trove:Add(terrainParts.ChildAdded:Connect(function(part: BasePart)
+				print(part)
 				table.insert(streamingTerrainParts, part)
 			end))
 			trove:Add(terrainParts.ChildRemoved:Connect(function(part: BasePart)
@@ -140,6 +142,13 @@ function WorldTerrainController:KnitInit()
 		loadedTerrainParts = {}
 	end)
 	
+	self.worldPositions = nil :: { [string]: Vector3 }?
+	WorldTerrainService.WorldSpawnPositionsLoaded:Connect(function(...)
+		self.worldPositions = ...
+	end)
+	
+	self:ManageStreaming()
+	
 	local ProfileStoreService = Knit.GetService("ProfileStoreService")
 	ProfileStoreService.ProfileLoaded:Connect(function()
 		local currentWorldVal: NumberValue = player.Data.CurrentWorld
@@ -162,7 +171,6 @@ function WorldTerrainController:KnitInit()
 	RunService.Heartbeat:Connect(function()
 		self:Heartbeat()
 	end)
-	self:ManageStreaming()
 end
 
 return WorldTerrainController

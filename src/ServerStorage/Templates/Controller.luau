@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Containers --
 local Packages = ReplicatedStorage.Packages
 
--- Moduoles --
+-- Modules --
 local Knit = require(Packages.Knit)
 
 -- Controller

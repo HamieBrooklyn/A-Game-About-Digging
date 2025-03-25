@@ -7,6 +7,7 @@ local Packages = ReplicatedStorage.Packages
 
 -- Modules --
 local Fusion = require(Packages.Fusion)
+local Knit = require(Packages.Knit)
 
 local abbreviateNumber = require(ReplicatedStorage.Source.Utils.abbreviateNumber)
 
@@ -22,7 +23,9 @@ export type Props = {}
 
 function StatLabel.new(label: GuiLabel)
 	local self = setmetatable({}, StatLabel)
-	self:init(label)
+	Knit.GetService("ProfileStoreService").ProfileLoaded:Connect(function()
+		self:init(label)
+	end)
 	return self
 end
 
@@ -73,7 +76,7 @@ function StatLabel:init(label: GuiLabel)
 	local function check(value: number)
 		checkScope:doCleanup()
 		
-		task.delay(0.4, function()
+		task.delay(1.5, function()
 			local values: { [number]: NumberValue } = {}
 			for i, val in statVals do
 				local lastValue = statValsLast[val] or val.Value

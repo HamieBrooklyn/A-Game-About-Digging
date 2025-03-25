@@ -11,8 +11,8 @@ local Signal = require(Packages.Signal)
 local Knit = require(Packages.Knit)
 
 -- Modules --
+local DataFolders = require(ReplicatedStorage.Source.Data.DataFolders)
 local ProfileTemplate = require(script.ProfileTemplate)
-local CustomFolders = require(script.CustomFolders)
 
 local ProfileStore = require(script.ProfileStore)
 
@@ -38,21 +38,18 @@ function ProfileStoreService:SetupDataFolder(player: Player)
 	
 	local janitor = playerProfileJanitors[player]
 	
-	local dataFold = Instance.new("Folder")
-	dataFold.Name = "Data"
-	
-	local customFolders = {}
-	for folderName, _ in CustomFolders do
+	local dataFolders = {}
+	for folderName, _ in DataFolders do
 		local customFold = Instance.new("Folder")
 		customFold.Name = folderName
-		customFolders[customFold.Name] = customFold 
+		dataFolders[customFold.Name] = customFold 
 	end
 	
 	for name, value in profile.Data do
 		local customFold: Folder?
-		for folderName, valueNames in CustomFolders do
+		for folderName, valueNames in DataFolders do
 			if table.find(valueNames, name) then
-				customFold = customFolders[folderName]
+				customFold = dataFolders[folderName]
 			end
 		end
 		
@@ -63,14 +60,13 @@ function ProfileStoreService:SetupDataFolder(player: Player)
 			janitor:Add(val.Changed:Connect(function(newValue)
 				profile.Data[name] = newValue
 			end))
-			val.Parent = customFold or dataFold
+			val.Parent = customFold
 		end
 	end
 	
-	for _, customFold: Folder in customFolders do
+	for _, customFold: Folder in dataFolders do
 		customFold.Parent = player
 	end
-	dataFold.Parent = player
 end
 
 function ProfileStoreService:ManageAddedPlayer(player: Player)
@@ -107,6 +103,8 @@ end
 function ProfileStoreService:KnitInit()
 	self.playerStore = ProfileStore.New("PlayerStore", ProfileTemplate)
 	self.profiles = {} :: {[Player]: typeof(self.playerStore:StartSessionAsync())}
+	
+	self.Client.customFolders = CustomFolders
 	
 	for _, player in Players:GetPlayers() do
 		task.spawn(function()

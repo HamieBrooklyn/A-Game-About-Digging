@@ -1,3 +1,9 @@
+-- Services --
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Modules --
+local Resetting = require(ReplicatedStorage.Source.Data.Resetting)
+
 local ProfileTemplate = {}
 
 ProfileTemplate.Coins = 0
@@ -14,5 +20,7 @@ ProfileTemplate.DigPoints = {} :: {
 		[number]: { radius: number, position: { x: number, y: number, z: number } } -- Dig Point
 	}
 }
+
+ProfileTemplate.TimeUntilReset = Resetting.Terrain.COOLDOWN
 
 return ProfileTemplate

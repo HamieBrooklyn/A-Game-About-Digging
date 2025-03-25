@@ -1,5 +1,6 @@
 -- Services --
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Containers --
@@ -55,7 +56,9 @@ function SellingService:ManageAddedSellModel(sellModel: Model)
 		outputVal.Value += give
 		inputVal.Value = 0
 		
-		self.Client.Sold:Fire(player, outputVal.Name, give)
+		for _, otherPlayer in Players:GetPlayers() do
+			self.Client.Sold:Fire(otherPlayer, player, outputVal.Name, give)
+		end
 	end)
 end
 

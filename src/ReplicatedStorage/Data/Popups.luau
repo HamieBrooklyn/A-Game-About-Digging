@@ -9,7 +9,11 @@ Popups.IconPopups = {
 	DISTANCE_FROM_MOUSE_MIN = -0.1,
 	DISTANCE_FROM_MOUSE_MAX = 0.1,
 	
-	TWEEN_TO_DESTINATION_DELAY = 0.5,
+	TWEEN_TO_DESTINATION_DELAY = 1,
+}
+
+Popups.Messages = {
+	TWEEN_INFO = TweenInfo.new(0.2)
 }
 
 return Popups

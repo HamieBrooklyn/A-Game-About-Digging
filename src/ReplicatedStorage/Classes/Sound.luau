@@ -11,9 +11,17 @@ Sound.__index = Sound
 type Self = typeof(Sound)
 export type Props = {}
 
-function Sound.new(sound: Instance | string, props: Props?, parent: Instance?, playOnAwake: boolean?, deleteOnEnd: boolean?)
+function Sound.new(
+	sound: Instance | string,
+	props: Props?,
+	parent: Instance?,
+	playOnAwake: boolean?,
+	deleteOnEnd: boolean?,
+	minSpeed: number?,
+	maxSpeed: number?
+)
 	local self = setmetatable({}, Sound)
-	self:init(sound, props, parent, playOnAwake, deleteOnEnd)
+	self:init(sound, props, parent, playOnAwake, deleteOnEnd, minSpeed, maxSpeed)
 	return self
 end
 
@@ -33,11 +41,26 @@ local function getSound(self: Self, sound: Instance | string, props: Props?): So
 	return out
 end
 
-function Sound:init(sound: Instance | string, props: Props, parent: Instance?, playOnAwake: boolean?, deleteOnEnd: boolean?)
+function Sound:init(
+	sound: Instance | string,
+	props: Props,
+	parent: Instance?,
+	playOnAwake: boolean?,
+	deleteOnEnd: boolean?,
+	minSpeed: number?,
+	maxSpeed: number?
+)
+	local rnd = Random.new()
+	
 	self.scope = Fusion:scoped() :: Fusion.Scope
 	self.ended = Signal.new()
+	
 	self.instance = getSound(self, sound, props)
+	if minSpeed and maxSpeed then
+		self.instance.PlaybackSpeed = rnd:NextNumber(minSpeed, maxSpeed)
+	end
 	self.instance.Parent = parent or workspace
+	
 	if playOnAwake == nil or playOnAwake then
 		self:Play()
 	end

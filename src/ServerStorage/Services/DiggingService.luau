@@ -44,7 +44,11 @@ function DiggingService:CheckValidMaterialOnPosition(player: Player, position: V
 	local terrainPart: BasePart?
 	for _, part in terrainParts do
 		local pos = part:GetAttribute("TopPart") and position - Vector3.yAxis * 5 or
-					part:GetAttribute("BottomPart") and position + Vector3.yAxis * 5
+					part:GetAttribute("BottomPart") and position + Vector3.yAxis * 5 or
+					position
+		if not pos then
+			continue
+		end
 		if isInBrick(pos, part) then
 			terrainPart = part
 			break
