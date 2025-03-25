@@ -3,6 +3,8 @@ local Digging = {}
 Digging.MAX_DIGGING_DISTANCE = 30
 Digging.FULL_STORAGE_WARNING_COOLDOWN = 3
 
+Digging.MIN_DEPTH_TELEPORT = 10
+
 Digging.Gui = {
 	TeleportButton = {
 		TWEEN_INFO = TweenInfo.new(0.25),

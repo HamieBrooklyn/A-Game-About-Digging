@@ -52,6 +52,8 @@ function ResettingService:UpdatePlayerTimes()
 		if newTime == 0 then
 			playerTimes[player] = Resetting.Terrain.COOLDOWN
 			
+			self.PlayerService:TeleportPlayerToWorld(player, profile.Data.CurrentWorld)
+			
 			self.PlayerReset:Fire(player)
 			self.Client.Reset:Fire(player)
 		end
@@ -60,6 +62,8 @@ end
 
 function ResettingService:KnitInit()
 	self.ProfileStoreService = Knit.GetService("ProfileStoreService")
+	self.PlayerService = Knit.GetService("PlayerService")
+	
 	self.ProfileStoreService.PlayerProfileLoaded:Connect(function(...)
 		self:ManageLoadedPlayer(...)
 	end)
