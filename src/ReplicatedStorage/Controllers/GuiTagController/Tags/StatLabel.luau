@@ -9,7 +9,7 @@ local Packages = ReplicatedStorage.Packages
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
 
-local abbreviateNumber = require(ReplicatedStorage.Source.Utils.abbreviateNumber)
+local abbreviateNumber = require(ReplicatedStorage.Source.Utils.Abbreviation.abbreviateNumber)
 
 -- Variables --
 local peek = Fusion.peek

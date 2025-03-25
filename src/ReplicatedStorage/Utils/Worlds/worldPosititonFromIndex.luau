@@ -1,33 +1,23 @@
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
+
+-- Containers --
+local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Promise = require(ReplicatedStorage.Packages.Promise)
+local Worlds = require(ReplicatedStorage.Source.Data.Worlds)
 
-local worldFromIndex = require(ReplicatedStorage.Source.Utils.Worlds.worldFromIndex)
+local provider;
+if RunService:IsServer() then
+	provider = require(ServerStorage.Source.Services.WorldTerrainService)
+elseif RunService:IsClient() then
+	provider = require(ReplicatedStorage.Source.Controllers.WorldTerrainController)
+end
 
 local function worldPosititonFromIndex(index: number)
-	return Promise.new(function(resolve)
-		worldFromIndex(index):andThen(function(worldFold: Folder)
-			local con: RBXScriptConnection
-			
-			local function checkAdded(spawnLocation: SpawnLocation?)
-				if not spawnLocation:IsA("SpawnLocation") then
-					return
-				end
-				
-				con:Disconnect()
-				resolve(spawnLocation:GetPivot().Position)
-			end
-			
-			con = worldFold.ChildAdded:Connect(function(...)
-				checkAdded(...)
-			end)
-			for _, obj in worldFold:GetChildren() do
-				checkAdded(obj)
-			end
-		end)
-	end)
+	return provider.worldPositions[Worlds[index].Name]
 end
 
 return worldPosititonFromIndex

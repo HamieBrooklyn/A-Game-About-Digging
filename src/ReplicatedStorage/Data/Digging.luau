@@ -5,7 +5,8 @@ Digging.FULL_STORAGE_WARNING_COOLDOWN = 3
 
 Digging.Gui = {
 	TeleportButton = {
-		TWEEN_INFO = TweenInfo.new(1),
+		TWEEN_INFO = TweenInfo.new(0.25),
+		BOUNCE_COOLDOWN = 1,
 	},
 }
 

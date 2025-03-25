@@ -10,6 +10,8 @@ local Debris = game:GetService("Debris")
 
 -- Containers --
 local Packages = ReplicatedStorage.Packages
+
+local Utils = ReplicatedStorage.Source.Utils
 local Data = ReplicatedStorage.Source.Data
 
 -- Modules --
@@ -18,12 +20,15 @@ local Currency = require(ReplicatedStorage.Source.Data.Currency)
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
 
+local peek = Fusion.peek
+
 local Materials = require(Data.Materials)
 local Digging = require(Data.Digging)
 
 local Sound = require(ReplicatedStorage.Source.Classes.Sound)
 
-local getMaterialFromWorld = require(ReplicatedStorage.Source.Utils.WorldTerrain.getMaterialFromWorld)
+local getMaterialFromWorld = require(Utils.WorldTerrain.getMaterialFromWorld)
+local playerWorldDepth = require(Utils.Worlds.playerWorldDepth)
 
 -- Controller --
 local DiggingController = Knit.CreateController { Name = "DiggingController" }
@@ -259,19 +264,60 @@ function DiggingController:UpdateCooldownGui()
 	digCooldownCanvas.Visible = true
 end
 
+function DiggingController:ManageFullInventory()
+	local dataFold: Folder = player:FindFirstChild("Data")
+	local storage: NumberValue, dirt: NumberValue = dataFold.Storage, dataFold.Dirt
+	
+	local function checkFull()
+		self.storageIsFull:set(dirt.Value >= storage.Value)
+	end
+	
+	storage.Changed:Connect(checkFull)
+	dirt.Changed:Connect(checkFull)
+	checkFull()
+end
+
 function DiggingController:ManageTeleportButton()
-	self.scope:Hydrate(self.mainGui.Sides.Bottom.Middle.Upper.GoUp) {
+	local teleportButtonCanvas = self.mainGui.Test--self.mainGui.Sides.Bottom.Middle.Upper.GoUp
+	local startSize = teleportButtonCanvas.Size
+	
+	local sizeSpring: Fusion.Spring = self.scope:Spring(self.scope:Computed(function(use: Fusion.Use)
+		return use(self.teleportButtonShown) and startSize or UDim2.new()
+	end), 25, 0.8),
+	
+	self.scope:Hydrate(teleportButtonCanvas) {
 		GroupTransparency = self.scope:Tween(self.scope:Computed(function(use: Fusion.Use)
 			return use(self.teleportButtonShown) and 0 or 1
-		end), Digging.Gui.TeleportButton.TWEEN_INFO)
+		end), Digging.Gui.TeleportButton.TWEEN_INFO),
+		Size = sizeSpring,
 	}
+	
+	local lastBounce = tick()
+	RunService.Heartbeat:Connect(function()
+		local depth: number? = playerWorldDepth(player)
+		if not depth then
+			return
+		end
+		self.teleportButtonShown:set(depth >= 10)
+		
+		if peek(self.teleportButtonShown) and peek(self.storageIsFull) and tick() - lastBounce > Digging.Gui.TeleportButton.BOUNCE_COOLDOWN then
+			lastBounce = tick()
+			sizeSpring:addVelocity(UDim2.fromOffset(100, 100))
+		end
+	end)
 end
 
 function DiggingController:KnitInit()
 	self.WorldTerrainController = Knit.GetController("WorldTerrainController")
 	self.GuiAnimationController = Knit.GetController("GuiAnimationController")
 	self.PopupController = Knit.GetController("PopupController")
+	
+	self.ProfileStoreService = Knit.GetService("ProfileStoreService")
 	self.DiggingService = Knit.GetService("DiggingService")
+	
+	self.ProfileStoreService.ProfileLoaded:Connect(function()
+		self:ManageFullInventory()
+	end)
 	
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 	
@@ -291,7 +337,7 @@ function DiggingController:KnitInit()
 	}
 	
 	self.teleportButtonShown = self.scope:Value(false) :: Fusion.Value<boolean>
-	self.fullStorage = self.scope:Value(false) :: Fusion.Value<boolean>
+	self.storageIsFull = self.scope:Value(false) :: Fusion.Value<boolean>
 	self:ManageTeleportButton()
 	
 	UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)

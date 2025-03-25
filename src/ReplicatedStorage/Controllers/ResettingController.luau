@@ -12,7 +12,7 @@ local Fusion = require(Packages.Fusion)
 local Signal = require(Packages.Signal)
 local Knit = require(Packages.Knit)
 
-local formatTime = require(ReplicatedStorage.Source.Utils.formatTime)
+local formatTime = require(ReplicatedStorage.Source.Utils.Abbreviation.formatTime)
 
 -- Controller
 local ResettingController = Knit.CreateController { Name = "ResettingController" }

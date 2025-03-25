@@ -6,7 +6,7 @@ local TweenService = game:GetService("TweenService")
 local Packages = ReplicatedStorage.Packages
 
 -- Moduoles --
-local abbreviateNumber = require(ReplicatedStorage.Source.Utils.abbreviateNumber)
+local abbreviateNumber = require(ReplicatedStorage.Source.Utils.Abbreviation.abbreviateNumber)
 
 local Knit = require(Packages.Knit)
 
