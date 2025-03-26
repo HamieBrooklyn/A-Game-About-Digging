@@ -282,7 +282,7 @@ function DiggingController:ManageTeleportButton()
 	local startSize = teleportButtonCanvas.Size
 	
 	local size: Fusion.Value<Udim2> = self.scope:Value(UDim2.new())
-	local sizeSpring: Fusion.Spring = self.scope:Spring(size, 25, 0.8),
+	local sizeSpring: Fusion.Spring = self.scope:Spring(size, 25, 0.8)
 	self.scope:Observer(self.teleportButtonShown):onBind(function()
 		local shown = peek(self.teleportButtonShown)
 		if shown then
