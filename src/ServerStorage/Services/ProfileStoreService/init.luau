@@ -53,15 +53,23 @@ function ProfileStoreService:SetupDataFolder(player: Player)
 			end
 		end
 		
+		local val: ValueBase
 		if typeof(value) == "number" then
-			local val = Instance.new("NumberValue")
-			val.Name = name
-			val.Value = value
-			janitor:Add(val.Changed:Connect(function(newValue)
-				profile.Data[name] = newValue
-			end))
-			val.Parent = customFold
+			val = Instance.new("NumberValue")
+		elseif typeof(value) == "boolean" then
+			val = Instance.new("BoolValue")
 		end
+		
+		if not val then
+			continue
+		end
+		val.Name = name
+		val.Value = value
+		val.Parent = customFold
+		
+		janitor:Add(val.Changed:Connect(function(newValue)
+			profile.Data[name] = newValue
+		end))
 	end
 	
 	for _, customFold: Folder in dataFolders do

@@ -33,5 +33,6 @@ WaitFor = "sleitnick/wait-for@1.0.0"
 Fusion = "acecateer/fusion@0.3.1"
 
 ZonePlus = "mattschrubb/zoneplus@3.2.0"
+TopbarPlus = "legitatx/topbarplus@3.0.5"
 Janitor = "howmanysmall/janitor@1.17.0"
 Promise = "evaera/promise@4.0.0"

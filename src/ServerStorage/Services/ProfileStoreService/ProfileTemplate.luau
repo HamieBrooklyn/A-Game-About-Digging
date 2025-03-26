@@ -23,4 +23,6 @@ ProfileTemplate.DigPoints = {} :: {
 
 ProfileTemplate.TimeUntilReset = Resetting.Terrain.COOLDOWN
 
+ProfileTemplate.BackgroundMusicOn = true
+
 return ProfileTemplate

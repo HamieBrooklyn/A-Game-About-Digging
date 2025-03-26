@@ -8,6 +8,8 @@ CustomContainer.Data = {
 
 	[4] = "ToolUpgrade",
 	[5] = "ToolEquipped",
+	
+	[6] = "BackgroundMusicOn",
 }
 
 CustomContainer.leaderstats = {

@@ -11,7 +11,8 @@ local Loading = require(ReplicatedStorage.Source.Data.Loading)
 
 local LoadingGui = require(script.LoadingGui)
 
-local Fusion = require(Packages.Fusion) 
+local Fusion = require(Packages.Fusion)
+local Signal = require(Packages.Signal)
 local Knit = require(Packages.Knit)
 
 local Children = Fusion.Children
@@ -19,6 +20,8 @@ local peek = Fusion.peek
 
 -- Controller
 local LoadingController = Knit.CreateController { Name = "LoadingController" }
+
+LoadingController.FinishedLoading = Signal.new()
 
 -- Types --
 type Self = typeof(LoadingController)
@@ -61,6 +64,9 @@ function LoadingController:KnitInit()
 	}
 	
 	self.scope:Observer(self.assets):onChange(function()
+		if #peek(self.assets) == 0 then
+			return
+		end
 		for i, assets in peek(self.assets) do
 			for _, asset in assets do
 				ContentProvider:PreloadAsync({ asset })
@@ -69,6 +75,7 @@ function LoadingController:KnitInit()
 			end
 		end
 		self:CancelCurrentLoad()
+		self.FinishedLoading:Fire()
 	end)
 	
 	self:StartLoad({
