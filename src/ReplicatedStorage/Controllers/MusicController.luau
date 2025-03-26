@@ -7,6 +7,8 @@ local SoundService = game:GetService("SoundService")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
+local Music = require(ReplicatedStorage.Source.Data.Music)
+
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
 
@@ -24,6 +26,14 @@ end
 
 function MusicController:StartBackgroundMusic()
 	local bgSongs = SoundService.Music.Background:GetChildren()
+	for _, song: Sound in bgSongs do
+		self.scope:Hydrate(song) {
+			Volume = self.scope:Tween(self.scope:Computed(function(use: Fusion.Use)
+				return use(self.bgMusicOn) and Music.Volume.DEFAULT or Music.Volume.OFF
+			end), Music.Volume.TWEEN_INFO),
+		}
+	end
+	
 	task.spawn(function()
 		local function selectSong()
 			local song: Sound
@@ -57,20 +67,21 @@ function MusicController:KnitInit()
 	local LoadingController = Knit.GetController("LoadingController")
 	
 	self.scope = Fusion:scoped() :: Fusion.Scope
-	self.bgMusicPaused = self.scope:Value(false) :: Fusion.Value<boolean>
+	self.bgMusicOn = self.scope:Value(false) :: Fusion.Value<boolean>
 	self.currentSong = self.scope:Value(nil) :: Fusion.Value<Sound?>
+	self.volume = self.scope:Value(0.3) :: Fusion.Value<number>
 	
 	self.loopConnection = nil :: RBXScriptConnection?
 	
-	self.scope:Computed(function(use: Fusion.Use)
-		local song = use(self.currentSong)
-		if not song then
-			return
-		end
-		if use(self.bgMusicPaused) and not song.Playing then
-			song:Pause()
-		end
-	end)
+	-- self.scope:Computed(function(use: Fusion.Use)
+	-- 	local song = use(self.currentSong)
+	-- 	if not song then
+	-- 		return
+	-- 	end
+	-- 	if use(self.bgMusicOn) and not song.Playing then
+	-- 		song:Pause()
+	-- 	end
+	-- end)
 	
 	self.lastSong = nil :: Sound?
 	self.canceled = false
@@ -78,9 +89,9 @@ function MusicController:KnitInit()
 	ProfileStoreService.ProfileLoaded:Connect(function()
 		local bgMusicOnVal: BoolValue = Players.LocalPlayer.Data.BackgroundMusicOn
 		bgMusicOnVal.Changed:Connect(function(on)
-			self.bgMusicPaused:set(on)
+			self.bgMusicOn:set(on)
 		end)
-		self.bgMusicPaused:set(bgMusicOnVal.Value)
+		self.bgMusicOn:set(bgMusicOnVal.Value)
 		
 		LoadingController.FinishedLoading:Connect(function()
 			self:StartBackgroundMusic()
