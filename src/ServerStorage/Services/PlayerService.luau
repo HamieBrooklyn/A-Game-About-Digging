@@ -1,5 +1,6 @@
 -- Services --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
 
 -- Containers --
 local Utils = ReplicatedStorage.Source.Utils
@@ -7,6 +8,8 @@ local Packages = ReplicatedStorage.Packages
 
 -- Modules --
 local Knit = require(Packages.Knit)
+
+local Sound = require(ReplicatedStorage.Source.Classes.Sound)
 
 local worldPosititonFromIndex = require(Utils.Worlds.worldPosititonFromIndex)
 local canTeleporToTop = require(Utils.SharedConditions.canTeleporToTop)
@@ -30,6 +33,8 @@ function PlayerService:TeleportToTopAttempt(player: Player, worldIndex: number)
 		return
 	end
 	
+	Sound.new(SoundService.SoundEffects.Misc.TeleportTop, nil, player.Character.PrimaryPart)
+	self.ParticleService:EmitPlayerParticle(player, "Teleport")
 	self:TeleportPlayerToWorld(player, player.Data.CurrentWorld.Value)
 	
 	return true
@@ -47,6 +52,8 @@ function PlayerService:TeleportPlayerToWorld(player: Player, worldIndex: number)
 	char:PivotTo(CFrame.new(worldPosititonFromIndex(worldIndex)))
 end
 
-function PlayerService:KnitInit()end
+function PlayerService:KnitInit()
+	self.ParticleService = Knit.GetService("ParticleService")
+end
 
 return PlayerService

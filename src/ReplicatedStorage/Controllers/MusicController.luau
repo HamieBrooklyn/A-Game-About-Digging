@@ -48,7 +48,7 @@ function MusicController:StartBackgroundMusic()
 			self.lastSong = song
 			
 			self.loopConnection = song.Ended:Once(function()
-				newSong(newSong)
+				newSong(selectSong())
 			end)
 		end
 		newSong(selectSong())

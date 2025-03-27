@@ -20,6 +20,8 @@ local ResettingService = Knit.CreateService {
 	},
 }
 
+ResettingService.PlayerReset = Signal.new()
+
 -- Types --
 type Self = typeof(ResettingService)
 
@@ -67,8 +69,6 @@ function ResettingService:KnitInit()
 	self.ProfileStoreService.PlayerProfileLoaded:Connect(function(...)
 		self:ManageLoadedPlayer(...)
 	end)
-	
-	self.PlayerReset = Signal.new()
 	
 	Players.PlayerRemoving:Connect(function(player)
 		playerTimes[player] = nil
