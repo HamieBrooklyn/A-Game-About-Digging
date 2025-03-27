@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Selling = require(ReplicatedStorage.Source.Data.Selling)
+local Selling = require(ReplicatedStorage.Source.Data.Stats.Selling)
 
 local ZonePlus = require(Packages.ZonePlus)
 local Knit = require(Packages.Knit)

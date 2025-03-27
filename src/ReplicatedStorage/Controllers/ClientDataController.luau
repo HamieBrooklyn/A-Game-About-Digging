@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local DataFolders = require(ReplicatedStorage.Source.Data.DataFolders)
+local DataFolders = require(ReplicatedStorage.Source.Data.Player.DataFolders)
 
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)

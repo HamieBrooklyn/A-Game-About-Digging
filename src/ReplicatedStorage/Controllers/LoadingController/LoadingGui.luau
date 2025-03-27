@@ -5,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Loading = require(ReplicatedStorage.Source.Data.Loading)
+local Loading = require(ReplicatedStorage.Source.Data.Player.Loading)
 
 local TableUtil = require(Packages.TableUtil)
 local Fusion = require(Packages.Fusion)

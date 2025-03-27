@@ -13,7 +13,9 @@ local function worldFromIndex(index: number)
 			if worldFold:GetAttribute("Index") ~= index then
 				return
 			end
-			con:Disconnect()
+			if con then
+				con:Disconnect()
+			end
 			resolve(worldFold)
 		end
 		

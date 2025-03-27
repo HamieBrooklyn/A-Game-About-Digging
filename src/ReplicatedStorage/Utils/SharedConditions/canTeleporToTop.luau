@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Modules --
-local Digging = require(ReplicatedStorage.Source.Data.Digging)
+local Digging = require(ReplicatedStorage.Source.Data.Player.Digging)
 
 local playerWorldDepth = require(ReplicatedStorage.Source.Utils.Worlds.playerWorldDepth)
 

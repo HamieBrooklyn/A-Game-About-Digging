@@ -18,7 +18,7 @@ local SoundService = game:GetService("SoundService")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Popups = require(ReplicatedStorage.Source.Data.Popups)
+local Popups = require(ReplicatedStorage.Source.Data.Player.Popups)
 
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)

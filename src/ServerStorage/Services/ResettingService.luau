@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Resetting = require(ReplicatedStorage.Source.Data.Resetting)
+local Resetting = require(ReplicatedStorage.Source.Data.Worlds.Resetting)
 
 local Signal = require(Packages.Signal)
 local Knit = require(Packages.Knit)

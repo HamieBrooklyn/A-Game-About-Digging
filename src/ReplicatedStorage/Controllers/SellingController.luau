@@ -8,7 +8,7 @@ local SoundService = game:GetService("SoundService")
 local Packages = ReplicatedStorage.Packages
 
 -- Moduoles --
-local Currency = require(ReplicatedStorage.Source.Data.Currency)
+local Currency = require(ReplicatedStorage.Source.Data.Stats.Currency)
 
 local Sound = require(ReplicatedStorage.Source.Classes.Sound)
 

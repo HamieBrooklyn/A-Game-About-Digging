@@ -11,7 +11,7 @@ local Signal = require(Packages.Signal)
 local Knit = require(Packages.Knit)
 
 -- Modules --
-local DataFolders = require(ReplicatedStorage.Source.Data.DataFolders)
+local DataFolders = require(ReplicatedStorage.Source.Data.Player.DataFolders)
 local ProfileTemplate = require(script.ProfileTemplate)
 
 local ProfileStore = require(script.ProfileStore)

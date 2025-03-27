@@ -7,7 +7,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Worlds = require(ReplicatedStorage.Source.Data.Worlds)
+local Worlds = require(ReplicatedStorage.Source.Data.Worlds.Worlds)
 
 local provider;
 if RunService:IsServer() then

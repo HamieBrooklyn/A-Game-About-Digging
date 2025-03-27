@@ -9,8 +9,8 @@ local Utils = ReplicatedStorage.Source.Utils
 local Data = ReplicatedStorage.Source.Data
 
 -- Modules --
-local Materials = require(Data.Materials)
-local Digging = require(Data.Digging)
+local Materials = require(Data.Worlds.Materials)
+local Digging = require(Data.Player.Digging)
 
 local Knit = require(Packages.Knit)
 

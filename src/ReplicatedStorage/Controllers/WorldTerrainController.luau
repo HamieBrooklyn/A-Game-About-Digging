@@ -13,7 +13,7 @@ local Streamable = require(Packages.Streamable).Streamable
 local Knit = require(Packages.Knit)
 
 -- Modules --
-local WorldTerrainSpawning = require(ReplicatedStorage.Source.Data.WorldTerrainSpawning)
+local WorldTerrainSpawning = require(ReplicatedStorage.Source.Data.Worlds.WorldTerrainSpawning)
 
 local getWorldVariantFolder = require(WorldTerrainUtils.getWorldVariantFolder)
 local getMaterialFromWorld = require(WorldTerrainUtils.getMaterialFromWorld)

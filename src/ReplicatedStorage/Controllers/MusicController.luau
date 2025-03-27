@@ -7,7 +7,7 @@ local SoundService = game:GetService("SoundService")
 local Packages = ReplicatedStorage.Packages
 
 -- Modules --
-local Music = require(ReplicatedStorage.Source.Data.Music)
+local Music = require(ReplicatedStorage.Source.Data.Other.Music)
 
 local Fusion = require(Packages.Fusion)
 local Knit = require(Packages.Knit)
