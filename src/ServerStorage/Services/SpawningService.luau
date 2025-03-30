@@ -26,6 +26,7 @@ local SpawningService = Knit.CreateService {
 
 -- Types --
 type Self = typeof(SpawningService)
+type ServerTerrainSpawn = Types.TerrainSpawn & { spawnedModel: Model }
 
 -- Local --
 local playerGeneratedSpawns: { [Player]: { [number]: { [number]: { Types.TerrainSpawn } } } } = {}
@@ -115,11 +116,39 @@ function SpawningService:ManagePlayerLoaded(player: Player)
 	end
 end
 
+function SpawningService:SetupSpawnModels()
+	local function setupModel(model: Model)
+		for _, p: BasePart? in model:GetDescendants() do
+			if not p:IsA("BasePart") then
+				continue
+			end
+			
+			p.Anchored = true
+			p.CanCollide = false
+			p.CanTouch = false
+			
+			p.CastShadow = false
+		end
+	end
+	for _, instance in self.spawnModels do
+		if instance:IsA("Model") then
+			setupModel(instance)
+		elseif instance:IsA("Folder") then
+			setupModel(instance)
+		end
+	end
+end
+
+function SpawningService.Client:SpawnPointAttempt(player: Player, spawnData: ServerTerrainSpawn)
+	
+end
+
 function SpawningService:KnitInit()
 	self.spawnModels = {} :: { Model | Folder }
 	for _, obj: Model | Folder in ReplicatedStorage.Assets.Models.Spawnables:GetChildren() do
 		self.spawnModels[obj.Name] = obj
 	end
+	self:SetupSpawnModels()
 	
 	Players.PlayerAdded:Connect(function(player)
 		playerGeneratedSpawns[player] = {}

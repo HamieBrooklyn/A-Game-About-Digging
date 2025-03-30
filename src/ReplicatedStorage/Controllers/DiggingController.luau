@@ -18,6 +18,7 @@ local Data = ReplicatedStorage.Source.Data
 local Currency = require(ReplicatedStorage.Source.Data.Stats.Currency)
 
 local Fusion = require(Packages.Fusion)
+local Signal = require(Packages.Signal)
 local Knit = require(Packages.Knit)
 
 local peek = Fusion.peek
@@ -32,6 +33,8 @@ local playerWorldDepth = require(Utils.Worlds.playerWorldDepth)
 
 -- Controller --
 local DiggingController = Knit.CreateController { Name = "DiggingController" }
+
+DiggingController.Dug = Signal.new()
 
 -- Types --
 type Self = typeof(DiggingController)
@@ -110,6 +113,8 @@ function DiggingController:Dig()
 			return
 		end
 		workspace.Terrain:FillBall(digPos, toolData.Radius, Enum.Material.Air)
+		
+		self.Dug:Fire(toolData, digPos)
 		
 		local dirtLabel = player.PlayerGui.Main.Sides.Left.Dirt
 		self.PopupController:SendIcons({
@@ -279,60 +284,49 @@ end
 
 function DiggingController:ManageTeleportButton()
 	local teleportButtonCanvas = self.mainGui.Sides.Bottom.Middle.Upper.GoUp
-	local startSize = teleportButtonCanvas.Size
 	
-	local size: Fusion.Value<Udim2> = self.scope:Value(UDim2.new())
-	local sizeSpring: Fusion.Spring = self.scope:Spring(size, 25, 0.8)
-	self.scope:Observer(self.teleportButtonShown):onBind(function()
-		local shown = peek(self.teleportButtonShown)
-		if shown then
-			Sound.new(SoundService.SoundEffects.Gui.BigPop)
-		end
-		
-		size:set(shown and startSize or UDim2.new())
-	end)
-	
-	self.scope:Hydrate(teleportButtonCanvas) {
-		GroupTransparency = self.scope:Tween(self.scope:Computed(function(use: Fusion.Use)
-			return use(self.teleportButtonShown) and 0 or 1
-		end), Digging.Gui.TeleportButton.TWEEN_INFO),
-		Size = sizeSpring,
-	}
-	self.scope:Hydrate(teleportButtonCanvas.Message) {
-		Text = self.scope:Computed(function(use: Fusion.Use)
-			return use(self.storageIsFull) and "Go Up!" or "Go Up?"
+	self.GuiAnimationController:ObserveTaggedObject(teleportButtonCanvas, function(animationValues)
+		self.scope:Observer(self.teleportButtonShown):onBind(function()
+			local shown = peek(self.teleportButtonShown)
+			if shown then
+				Sound.new(SoundService.SoundEffects.Gui.BigPop)
+			end
+			
+			animationValues.size:set(shown and peek(animationValues.startSize) or UDim2.new())
 		end)
-	}
-	
-	teleportButtonCanvas.Interact.MouseButton1Click:Connect(function()
-		local playerData: Folder? = player:FindFirstChild("Data")
-		if not playerData then
-			return
-		end
-		local attempt = self.PlayerController:TeleportToTopAttempt(player, playerData.CurrentWorld.Value)
-		if not attempt then
-			return
-		end
-		attempt:andThen(function(teleported: boolean?)
-			if not teleported then
+		
+		self.scope:Hydrate(teleportButtonCanvas) {
+			GroupTransparency = self.scope:Tween(self.scope:Computed(function(use: Fusion.Use)
+				return use(self.teleportButtonShown) and 0 or 1
+			end), Digging.Gui.TeleportButton.TWEEN_INFO),
+		}
+		self.scope:Hydrate(teleportButtonCanvas.Message) {
+			Text = self.scope:Computed(function(use: Fusion.Use)
+				return use(self.storageIsFull) and "Go Up!" or "Go Up?"
+			end)
+		}
+		
+		teleportButtonCanvas.Interact.MouseButton1Click:Connect(function()
+			local playerData: Folder? = player:FindFirstChild("Data")
+			if not playerData then
 				return
 			end
-			print("TELEPORTED!")
+			self.PlayerController:TeleportToTopAttempt(player, playerData.CurrentWorld.Value)
 		end)
-	end)
-	
-	local lastBounce = tick()
-	RunService.Heartbeat:Connect(function()
-		local depth: number? = playerWorldDepth(player)
-		if not depth then
-			return
-		end
-		self.teleportButtonShown:set(depth >= Digging.MIN_DEPTH_TELEPORT)
 		
-		if peek(self.teleportButtonShown) and peek(self.storageIsFull) and tick() - lastBounce > Digging.Gui.TeleportButton.BOUNCE_COOLDOWN then
-			lastBounce = tick()
-			sizeSpring:addVelocity(UDim2.fromScale(0.3, 0.3))
-		end
+		local lastBounce = tick()
+		RunService.Heartbeat:Connect(function()
+			local depth: number? = playerWorldDepth(player)
+			if not depth then
+				return
+			end
+			self.teleportButtonShown:set(depth >= Digging.MIN_DEPTH_TELEPORT)
+			
+			if peek(self.teleportButtonShown) and peek(self.storageIsFull) and tick() - lastBounce > Digging.Gui.TeleportButton.BOUNCE_COOLDOWN then
+				lastBounce = tick()
+				animationValues.sizeSpring:addVelocity(UDim2.fromScale(0.3, 0.3))
+			end
+		end)
 	end)
 end
 

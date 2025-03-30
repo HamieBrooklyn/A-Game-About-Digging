@@ -4,30 +4,31 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Containers --
 local Packages = ReplicatedStorage.Packages
 
--- Modules --
+-- Packages --
 local Fusion = require(Packages.Fusion)
 
+-- Variables --
 local peek = Fusion.peek
 
 -- Class --
-local TAG_NAME = {}
-TAG_NAME.__index = TAG_NAME
+local TYPE_NAME = {}
+TYPE_NAME.__index = TYPE_NAME
 type UsedAs = Fusion.UsedAs
-type Self = typeof(TAG_NAME)
+type Self = typeof(TYPE_NAME)
 export type Props = {}
 
-function TAG_NAME.new(instance: Instance)
-	local self = setmetatable({}, TAG_NAME)
-	self:init(instance)
+function TYPE_NAME.new(...)
+	local self = setmetatable({}, TYPE_NAME)
+	self:init(...)
 	return self
 end
 
-function TAG_NAME:init(instance: Instance)
+function TYPE_NAME:init(obj: GuiObject)
 	self.scope = Fusion:scoped() :: Fusion.Scope
 end
 
-function TAG_NAME:Destroy()
+function TYPE_NAME:Destroy()
 	self.scope:doCleanup()
 end
 
-return TAG_NAME
+return TYPE_NAME
