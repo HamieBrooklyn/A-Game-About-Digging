@@ -8,6 +8,14 @@ GroundSpawns.Worlds = {
 		[1] = {
 			["Rock"] = { Chance = 50 },
 		},
+		[2] = {
+			["Rock"] = { Chance = 50 },
+			["Coal"] = { Chance = 20 },
+		},
+		[3] = {
+			["Rock"] = { Chance = 50 },
+			["Coal"] = { Chance = 50 },
+		},
 	},
 }
 

@@ -66,23 +66,28 @@ function WorldTerrainController:UnloadTerrainPart(part: BasePart)
 	end
 end
 
+local function onTerrainPartAdded(terrainPart: BasePart)
+	local index = table.find(streamingTerrainParts, terrainPart)
+	if not index then
+		table.insert(streamingTerrainParts, terrainPart)
+	end
+end
+
+local function onTerrainPartRemoved(terrainPart: BasePart)
+	local index = table.find(streamingTerrainParts, terrainPart)
+	if index then
+		table.remove(streamingTerrainParts, index)
+	end
+end
+
 function WorldTerrainController:ManageStreaming()
 	for _, worldFold: Folder in workspace.Worlds:GetChildren() do
 		Streamable.new(worldFold, "TerrainParts"):Observe(function(terrainParts: Model, trove)
+			trove:Add(terrainParts.ChildAdded:Connect(onTerrainPartAdded))
+			trove:Add(terrainParts.ChildRemoved:Connect(onTerrainPartRemoved))
 			for _, part in terrainParts:GetChildren() do
-				print(part)
-				table.insert(streamingTerrainParts, part)
+				onTerrainPartAdded(part)
 			end
-			trove:Add(terrainParts.ChildAdded:Connect(function(part: BasePart)
-				print(part)
-				table.insert(streamingTerrainParts, part)
-			end))
-			trove:Add(terrainParts.ChildRemoved:Connect(function(part: BasePart)
-				local index = table.find(streamingTerrainParts, part)
-				if index then
-					table.remove(streamingTerrainParts, index)
-				end
-			end))
 		end)
 	end
 end

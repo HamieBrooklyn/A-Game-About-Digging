@@ -11,6 +11,10 @@ local Knit = require(Packages.Knit)
 local SpawningService = Knit.CreateService { Name = "SpawningService" }
 type Self = typeof(SpawningService)
 
+function SpawningService.Client:SpawnOnPointAttempt(player: Player)
+	
+end
+
 function SpawningService:KnitInit()
 	
 end

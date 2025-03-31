@@ -67,15 +67,15 @@ local _focusFramesVisible = {}
 
 local lockedFocus: Frame?;
 
-local FrameController = Knit.CreateController {
-	Name = "FrameController";
+local MenuFocusController = Knit.CreateController {
+	Name = "MenuFocusController";
 	CurrentFocus = nil;
 	_Signals = {
 		FrameFinishedFocusing = Instance.new("BindableEvent");
 	};
 }
 
-function FrameController:FocusFrame(frame: Frame?, prop: boolean)
+function MenuFocusController:FocusFrame(frame: Frame?, prop: boolean)
 	if lockedFocus and lockedFocus ~= frame and prop then
 		_frameCounters[frame] = 1
 		frame.Visible = false
@@ -179,9 +179,9 @@ function FrameController:FocusFrame(frame: Frame?, prop: boolean)
 	-- Setting the current focus to the frame if it is shown else removing the current focus if it is hidden and the current focus is the same frame that was sent in
 	self.CurrentFocus = if not prop and self.CurrentFocus == frame then nil else frame
 end
-shared.FocusFrame = FrameController.FocusFrame
+shared.FocusFrame = MenuFocusController.FocusFrame
 
-function FrameController:HideSides(sides: {string}, prop: boolean)
+function MenuFocusController:HideSides(sides: {string}, prop: boolean)
 	task.spawn(function()
 		-- Getting the player and finding theur sides container
 		local player = Players.LocalPlayer
@@ -222,7 +222,7 @@ function FrameController:HideSides(sides: {string}, prop: boolean)
 	end)
 end
 
-function FrameController:KnitInit()
+function MenuFocusController:KnitInit()
 	-- Setting up the signals so that they are accessible from the required module directly
 	for name: string, signal: BindableEvent in self._Signals do
 		self[name] = signal.Event
@@ -283,4 +283,4 @@ function Tween(object: GuiObject, property: string, value: any, speed: number, c
 	return tween
 end
 
-return FrameController
+return MenuFocusController

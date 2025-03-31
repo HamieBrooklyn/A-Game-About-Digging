@@ -9,6 +9,8 @@ local GuiAnimation = require(ReplicatedStorage.Source.Data.Gui.GuiAnimation)
 
 local Fusion = require(Packages.Fusion)
 
+local Sound = require(ReplicatedStorage.Source.Classes.Sound)
+
 -- Variables --
 local OnEvent = Fusion.OnEvent
 local peek = Fusion.peek
@@ -37,8 +39,11 @@ function ButtonInteract:init(taggedObject: GuiObject)
 	
 	self.scope:Computed(function(use: Fusion.Use)
 		local startSize = peek(self.animationValues.startSize)
-		
 		local hov, hol = use(hovering), use(holding)
+		if taggedObject.Name == "ShovelsClose" then
+			print("HOVERING:", hov)
+			print("HOLDING:", hol)
+		end
 		self.animationValues.size:set(
 			(hov and not hol) and startSize + UDim2.fromOffset(10, 10) or
 			(hov and hol) and startSize - UDim2.fromOffset(10, 10) or
@@ -59,6 +64,9 @@ function ButtonInteract:init(taggedObject: GuiObject)
 		end,
 		[OnEvent("MouseButton1Up")] = function()
 			holding:set(false)
+		end,
+		[OnEvent("MouseButton1Click")] = function()
+			Sound.new(GuiAnimation.CLICK_SOUND)
 		end,
 	}
 end
