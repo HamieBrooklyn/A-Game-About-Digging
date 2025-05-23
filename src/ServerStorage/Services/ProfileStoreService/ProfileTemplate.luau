@@ -24,6 +24,8 @@ ProfileTemplate.DigPoints = {} :: {
 	}
 }
 
+ProfileTemplate.GroundSeed = math.random()
+
 ProfileTemplate.TimeUntilReset = Resetting.Terrain.COOLDOWN
 
 ProfileTemplate.BackgroundMusicOn = true
